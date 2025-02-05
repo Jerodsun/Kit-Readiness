@@ -115,8 +115,9 @@ VALUES
         44.9778,
         -93.2650
     ),
-    ('Plains Facility', 'Omaha, NE', 41.2565, -95.9345)
-    -- Sample Warehouse Inventory
+    ('Plains Facility', 'Omaha, NE', 41.2565, -95.9345);
+
+-- Sample Warehouse Inventory
 INSERT INTO
     warehouse_inventory (
         warehouse_id,
