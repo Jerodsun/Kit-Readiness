@@ -68,6 +68,10 @@ def create_layout():
                                         label="Kit Calculator",
                                         tab_id="kit-calculator",
                                     ),
+                                    dbc.Tab(
+                                        label="Rebalance Warehouses",
+                                        tab_id="rebalance-warehouses",
+                                    ),
                                 ],
                                 id="tabs",
                                 active_tab="home",
@@ -105,6 +109,75 @@ def create_layout():
                                     ),
                                 ],
                                 id="kit-calculator-warehouse-selector",
+                                style={"display": "none"},
+                            ),
+                            # Add rebalancing container
+                            html.Div(
+                                [
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                [
+                                                    html.Label("Source Warehouse:"),
+                                                    dcc.Dropdown(
+                                                        id="source-warehouse",
+                                                        className="mb-4",
+                                                    ),
+                                                ],
+                                                width=6,
+                                            ),
+                                            dbc.Col(
+                                                [
+                                                    html.Label(
+                                                        "Destination Warehouse:"
+                                                    ),
+                                                    dcc.Dropdown(
+                                                        id="destination-warehouse",
+                                                        className="mb-4",
+                                                    ),
+                                                ],
+                                                width=6,
+                                            ),
+                                        ]
+                                    ),
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                [
+                                                    html.Label(
+                                                        "Minimum Transfer Quantity:"
+                                                    ),
+                                                    dcc.Input(
+                                                        id="min-transfers",
+                                                        type="number",
+                                                        min=1,
+                                                        value=1,
+                                                        className="form-control mb-4",
+                                                    ),
+                                                ],
+                                                width=6,
+                                            ),
+                                            dbc.Col(
+                                                [
+                                                    html.Label(
+                                                        "Maximum Transfer Quantity:"
+                                                    ),
+                                                    dcc.Input(
+                                                        id="max-transfers",
+                                                        type="number",
+                                                        min=1,
+                                                        value=100,
+                                                        className="form-control mb-4",
+                                                    ),
+                                                ],
+                                                width=6,
+                                            ),
+                                        ]
+                                    ),
+                                    html.Div(id="rebalance-suggestions"),
+                                    html.Div(id="transfer-form"),
+                                ],
+                                id="rebalance-container",
                                 style={"display": "none"},
                             ),
                         ],

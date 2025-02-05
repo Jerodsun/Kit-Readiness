@@ -150,3 +150,134 @@ def calculate_possible_kits(warehouse_id):
             (warehouse_id,),
         ).fetchall()
         return result
+
+
+def calculate_rebalance_suggestions(
+    source_id, dest_id, min_transfers=1, max_transfers=100
+):
+    logger.info(
+        f"Calculating rebalance suggestions between warehouses {source_id} and {dest_id}"
+    )
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+
+        # Get current kit completion possibilities for both warehouses
+        current_source_kits = cursor.execute(
+            """
+            WITH KitLimits AS (
+                SELECT 
+                    k.kit_id,
+                    MIN(FLOOR(CAST(wi.quantity AS FLOAT) / kc.quantity)) as possible_kits
+                FROM kits k
+                JOIN kit_components kc ON k.kit_id = kc.kit_id
+                JOIN warehouse_inventory wi ON kc.component_id = wi.component_id
+                WHERE wi.warehouse_id = ?
+                GROUP BY k.kit_id
+            )
+            SELECT COALESCE(SUM(possible_kits), 0) as total_possible_kits
+            FROM KitLimits
+        """,
+            (source_id,),
+        ).fetchone()["total_possible_kits"]
+
+        current_dest_kits = cursor.execute(
+            """
+            WITH KitLimits AS (
+                SELECT 
+                    k.kit_id,
+                    MIN(FLOOR(CAST(wi.quantity AS FLOAT) / kc.quantity)) as possible_kits
+                FROM kits k
+                JOIN kit_components kc ON k.kit_id = kc.kit_id
+                JOIN warehouse_inventory wi ON kc.component_id = wi.component_id
+                WHERE wi.warehouse_id = ?
+                GROUP BY k.kit_id
+            )
+            SELECT COALESCE(SUM(possible_kits), 0) as total_possible_kits
+            FROM KitLimits
+        """,
+            (dest_id,),
+        ).fetchone()["total_possible_kits"]
+
+        # Get component inventories and requirements
+        source_inventory = cursor.execute(
+            """
+            SELECT 
+                c.component_id,
+                c.component_name,
+                wi.quantity as available_quantity,
+                wi.min_stock,
+                wi.max_stock
+            FROM warehouse_inventory wi
+            JOIN components c ON wi.component_id = c.component_id
+            WHERE wi.warehouse_id = ?
+        """,
+            (source_id,),
+        ).fetchall()
+
+        dest_inventory = {
+            row["component_id"]: row["quantity"]
+            for row in cursor.execute(
+                """
+            SELECT component_id, quantity
+            FROM warehouse_inventory
+            WHERE warehouse_id = ?
+        """,
+                (dest_id,),
+            ).fetchall()
+        }
+
+        # Calculate potential transfers
+        suggestions = []
+        for component in source_inventory:
+            # Calculate excess inventory (keeping minimum stock level)
+            excess = max(0, component["available_quantity"] - component["min_stock"])
+
+            if excess > 0:
+                # Calculate how much the destination warehouse needs
+                dest_current = dest_inventory.get(component["component_id"], 0)
+                dest_max = component["max_stock"]
+                dest_capacity = max(0, dest_max - dest_current)
+
+                # Calculate transfer amount within constraints
+                transfer_amount = min(excess, dest_capacity, max_transfers)
+
+                if transfer_amount >= min_transfers:
+                    # Calculate impact score based on kit completion potential
+                    impact_score = cursor.execute(
+                        """
+                        SELECT COUNT(*) as kit_count
+                        FROM kit_components
+                        WHERE component_id = ?
+                    """,
+                        (component["component_id"],),
+                    ).fetchone()["kit_count"]
+
+                    suggestions.append(
+                        {
+                            "component_id": component["component_id"],
+                            "component": component["component_name"],
+                            "quantity": transfer_amount,
+                            "impact": "High"
+                            if impact_score > 2
+                            else "Medium"
+                            if impact_score > 1
+                            else "Low",
+                            "source_remaining": component["available_quantity"]
+                            - transfer_amount,
+                            "dest_new_total": dest_current + transfer_amount,
+                        }
+                    )
+
+        # Sort suggestions by impact
+        impact_values = {"High": 3, "Medium": 2, "Low": 1}
+        suggestions.sort(
+            key=lambda x: (impact_values[x["impact"]], x["quantity"]), reverse=True
+        )
+
+        return {
+            "suggestions": suggestions,
+            "current_metrics": {
+                "source_kits": current_source_kits,
+                "dest_kits": current_dest_kits,
+            },
+        }
