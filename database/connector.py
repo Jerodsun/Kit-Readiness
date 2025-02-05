@@ -308,3 +308,26 @@ def update_warehouse_inventory(warehouse_id, updates):
             logger.error(f"Error updating inventory: {e}")
             conn.rollback()
             return False
+
+
+def create_shipment(warehouse_id, destination_id, kit_id, quantity, shipment_date):
+    """Creates a new shipment record"""
+    logger.info(f"Creating shipment from warehouse {warehouse_id} to destination {destination_id}")
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                """
+                INSERT INTO shipments (
+                    shipment_date, warehouse_id, destination_id, 
+                    kit_id, quantity
+                ) VALUES (?, ?, ?, ?, ?)
+                """,
+                (shipment_date, warehouse_id, destination_id, kit_id, quantity)
+            )
+            conn.commit()
+            return True
+        except Exception as e:
+            logger.error(f"Error creating shipment: {e}")
+            conn.rollback()
+            return False
