@@ -14,13 +14,13 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 # Initialize the Dash app
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-# Include custom CSS
+# Include CSS
 app.css.append_css({"external_url": "/assets/style.css"})
 
-# Set the layout of the app
+# Set layout
 app.layout = create_layout()
 
-# Register the callbacks
+# Register callbacks
 register_callbacks(app)
 
 # Run the server
