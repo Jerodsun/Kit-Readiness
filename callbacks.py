@@ -677,7 +677,7 @@ def register_callbacks(app):
     )
     def update_kit_calculations(warehouse_id):
         possible_kits = calculate_possible_kits(warehouse_id)
-        kit_components = get_kit_components()
+        kit_components = get_kit_components(warehouse_id)
 
         # Create results table
         results_table = dash_table.DataTable(
@@ -701,6 +701,12 @@ def register_callbacks(app):
                 {"name": "Kit", "id": "kit_name"},
                 {"name": "Component", "id": "component_name"},
                 {"name": "Required Quantity", "id": "required_quantity"},
+                {"name": "Current Inventory", "id": "current_inventory"},
+                {
+                    "name": "Possible Completions",
+                    "id": "possible_completions",
+                    "type": "numeric",
+                },
             ],
             style_table={"overflowX": "auto"},
             style_cell={"textAlign": "left", "padding": "10px"},
@@ -708,6 +714,16 @@ def register_callbacks(app):
                 "backgroundColor": "rgb(230, 230, 230)",
                 "fontWeight": "bold",
             },
+            style_data_conditional=[
+                {
+                    "if": {
+                        "filter_query": "{possible_completions} > 0",
+                        "column_id": "possible_completions",
+                    },
+                    "backgroundColor": "#e8f5e9",
+                    "color": "#2e7d32",
+                },
+            ],
         )
 
         return (

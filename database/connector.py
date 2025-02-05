@@ -101,25 +101,48 @@ def get_warehouse_health_metrics():
         return result
 
 
-def get_kit_components():
+def get_kit_components(warehouse_id=None):
+    """Fetches kit component mappings with current inventory if warehouse specified"""
     logger.info("Fetching kit component mappings")
     with get_db_connection() as conn:
         cursor = conn.cursor()
-        result = cursor.execute(
-            """
-            SELECT 
-                k.kit_id,
-                k.kit_name,
-                k.description as kit_description,
-                c.component_id,
-                c.component_name,
-                kc.quantity as required_quantity
-            FROM kits k
-            JOIN kit_components kc ON k.kit_id = kc.kit_id
-            JOIN components c ON kc.component_id = c.component_id
-            ORDER BY k.kit_name, c.component_name
-        """
-        ).fetchall()
+        if warehouse_id:
+            result = cursor.execute(
+                """
+                SELECT 
+                    k.kit_id,
+                    k.kit_name,
+                    k.description as kit_description,
+                    c.component_id,
+                    c.component_name,
+                    kc.quantity as required_quantity,
+                    COALESCE(wi.quantity, 0) as current_inventory,
+                    FLOOR(CAST(COALESCE(wi.quantity, 0) AS FLOAT) / kc.quantity) as possible_completions
+                FROM kits k
+                JOIN kit_components kc ON k.kit_id = kc.kit_id
+                JOIN components c ON kc.component_id = c.component_id
+                LEFT JOIN warehouse_inventory wi ON c.component_id = wi.component_id 
+                    AND wi.warehouse_id = ?
+                ORDER BY k.kit_name, c.component_name
+                """,
+                (warehouse_id,),
+            ).fetchall()
+        else:
+            result = cursor.execute(
+                """
+                SELECT 
+                    k.kit_id,
+                    k.kit_name,
+                    k.description as kit_description,
+                    c.component_id,
+                    c.component_name,
+                    kc.quantity as required_quantity
+                FROM kits k
+                JOIN kit_components kc ON k.kit_id = kc.kit_id
+                JOIN components c ON kc.component_id = c.component_id
+                ORDER BY k.kit_name, c.component_name
+                """
+            ).fetchall()
         return result
 
 
