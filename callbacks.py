@@ -1,4 +1,4 @@
-from dash import Input, Output, html, dash_table, State, callback, dcc
+from dash import Input, Output, html, dash_table, State, callback, dcc, ctx
 import dash_bootstrap_components as dbc
 from database.connector import (
     get_all_warehouses,
