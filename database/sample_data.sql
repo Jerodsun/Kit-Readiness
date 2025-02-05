@@ -127,14 +127,14 @@ INSERT INTO
         max_stock
     )
 VALUES
-    (1, 1, 85, 20, 100), -- NY: 85 Hammers
-    (1, 2, 130, 30, 150), -- NY: 130 Screwdriver Sets
-    (1, 3, 85, 20, 100), -- NY: 85 Wrench Sets
-    (2, 4, 170, 40, 200), -- LA: 170 Flashlights
-    (2, 5, 425, 100, 500), -- LA: 425 Batteries
-    (3, 6, 255, 50, 300), -- Chicago: 255 Bandages
-    (3, 7, 425, 100, 500), -- Chicago: 425 Antiseptic Wipes
-    (3, 8, 170, 40, 200), -- Chicago: 170 Gauze Rolls
+    (1, 1, 50, 20, 100), -- NY: 50 Hammers
+    (1, 2, 75, 30, 150), -- NY: 75 Screwdriver Sets
+    (1, 3, 40, 20, 100), -- NY: 40 Wrench Sets
+    (2, 4, 100, 40, 200), -- LA: 100 Flashlights
+    (2, 5, 200, 100, 500), -- LA: 200 Batteries
+    (3, 6, 150, 50, 300), -- Chicago: 150 Bandages
+    (3, 7, 300, 100, 500), -- Chicago: 300 Antiseptic Wipes
+    (3, 8, 80, 40, 200), -- Chicago: 80 Gauze Rolls
     (4, 1, 85, 20, 100), -- Houston: 85 Hammers
     (4, 2, 130, 30, 150), -- Houston: 130 Screwdriver Sets
     (5, 3, 85, 20, 100), -- Denver: 85 Wrench Sets
@@ -148,12 +148,12 @@ VALUES
     (9, 3, 85, 20, 100), -- Boston: 85 Wrench Sets
     (9, 4, 170, 40, 200), -- Boston: 170 Flashlights
     (10, 5, 425, 100, 500), -- Miami: 425 Batteries
-    (10, 6, 255, 50, 300), -- Miami: 255 Bandages
-    (11, 7, 425, 100, 500), -- Cleveland: 425 Antiseptic Wipes
-    (11, 8, 170, 40, 200), -- Cleveland: 170 Gauze Rolls
-    (12, 1, 85, 20, 100), -- Minneapolis: 85 Hammers
-    (12, 2, 130, 30, 150), -- Minneapolis: 130 Screwdriver Sets
-    (13, 3, 85, 20, 100) -- Omaha: 85 Wrench Sets
+    (10, 6, 155, 50, 300), -- Miami: 155 Bandages
+    (11, 7, 310, 100, 500), -- Cleveland: 310 Antiseptic Wipes
+    (11, 8, 85, 40, 200), -- Cleveland: 85 Gauze Rolls
+    (12, 1, 65, 20, 100), -- Minneapolis: 65 Hammers
+    (12, 2, 85, 30, 150), -- Minneapolis: 85 Screwdriver Sets
+    (13, 3, 55, 20, 100) -- Omaha: 55 Wrench Sets
 ;
 
 -- Chicago: 80 Gauze Rolls
