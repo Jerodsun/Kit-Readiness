@@ -66,3 +66,36 @@ def get_kit_details():
         ).fetchall()
         logger.info(f"Retrieved {len(result)} kits.")
         return result
+
+
+def get_warehouse_health_metrics():
+    logger.info("Fetching warehouse health metrics.")
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        result = cursor.execute(
+            """
+            WITH StockLevels AS (
+                SELECT 
+                    w.warehouse_id,
+                    w.warehouse_name,
+                    COUNT(CASE WHEN wi.quantity <= wi.min_stock THEN 1 END) as low_stock_items,
+                    COUNT(wi.component_id) as total_items,
+                    SUM(wi.quantity) as total_inventory,
+                    AVG(CAST(wi.quantity as FLOAT) / NULLIF(wi.max_stock, 0)) * 100 as stock_level_percentage
+                FROM warehouses w
+                LEFT JOIN warehouse_inventory wi ON w.warehouse_id = wi.warehouse_id
+                GROUP BY w.warehouse_id, w.warehouse_name
+            )
+            SELECT 
+                *,
+                CASE 
+                    WHEN stock_level_percentage >= 80 THEN 'Healthy'
+                    WHEN stock_level_percentage >= 50 THEN 'Warning'
+                    ELSE 'Critical'
+                END as health_status
+            FROM StockLevels
+            ORDER BY stock_level_percentage DESC
+            """
+        ).fetchall()
+        logger.info(f"Retrieved health metrics for {len(result)} warehouses.")
+        return result
