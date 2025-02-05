@@ -1,11 +1,27 @@
-from dash import Input, Output, html, dash_table
+from dash import Input, Output, html, dash_table, State, callback
 import dash_bootstrap_components as dbc
-from database.connector import get_all_warehouses, get_warehouse_inventory
+from database.connector import (
+    get_all_warehouses,
+    get_warehouse_inventory,
+    get_warehouse_health_metrics,
+)
 from dash.exceptions import PreventUpdate
 import logging
 
 # Get logger
 logger = logging.getLogger(__name__)
+
+
+def create_health_card(title, value, color="success"):
+    return dbc.Card(
+        dbc.CardBody(
+            [
+                html.H4(title, className="card-title"),
+                html.H2(value, className=f"text-{color}"),
+            ]
+        ),
+        className="mb-4",
+    )
 
 
 def register_callbacks(app):
@@ -105,6 +121,96 @@ def register_callbacks(app):
                                     ],
                                     width=6,
                                 ),
+                            ]
+                        ),
+                    ]
+                ),
+                inventory_style,
+            )
+
+        elif active_tab == "warehouse-health":
+            # Moved health metrics content
+            health_metrics = get_warehouse_health_metrics()
+
+            # Calculate overall statistics
+            total_warehouses = len(health_metrics)
+            healthy_warehouses = sum(
+                1 for w in health_metrics if w["health_status"] == "Healthy"
+            )
+            critical_warehouses = sum(
+                1 for w in health_metrics if w["health_status"] == "Critical"
+            )
+
+            # Create overview cards
+            overview_stats = dbc.Row(
+                [
+                    dbc.Col(
+                        create_health_card(
+                            "Total Warehouses", total_warehouses, "primary"
+                        )
+                    ),
+                    dbc.Col(
+                        create_health_card(
+                            "Healthy Warehouses", healthy_warehouses, "success"
+                        )
+                    ),
+                    dbc.Col(
+                        create_health_card(
+                            "Critical Warehouses", critical_warehouses, "danger"
+                        )
+                    ),
+                ]
+            )
+
+            # Create warehouse health table
+            health_table = dash_table.DataTable(
+                data=[dict(row) for row in health_metrics],
+                columns=[
+                    {"name": "Warehouse", "id": "warehouse_name"},
+                    {
+                        "name": "Stock Level %",
+                        "id": "stock_level_percentage",
+                        "format": {"specifier": ".1f"},
+                    },
+                    {"name": "Low Stock Items", "id": "low_stock_items"},
+                    {"name": "Total Items", "id": "total_items"},
+                    {"name": "Status", "id": "health_status"},
+                ],
+                style_data_conditional=[
+                    {
+                        "if": {"filter_query": '{health_status} = "Critical"'},
+                        "backgroundColor": "#ffebee",
+                        "color": "#c62828",
+                    },
+                    {
+                        "if": {"filter_query": '{health_status} = "Warning"'},
+                        "backgroundColor": "#fff3e0",
+                        "color": "#ef6c00",
+                    },
+                    {
+                        "if": {"filter_query": '{health_status} = "Healthy"'},
+                        "backgroundColor": "#e8f5e9",
+                        "color": "#2e7d32",
+                    },
+                ],
+                style_table={"overflowX": "auto"},
+                style_cell={"textAlign": "left", "padding": "10px"},
+                style_header={
+                    "backgroundColor": "rgb(230, 230, 230)",
+                    "fontWeight": "bold",
+                },
+            )
+
+            return (
+                html.Div(
+                    [
+                        html.Br(),
+                        overview_stats,
+                        html.Br(),
+                        dbc.Card(
+                            [
+                                dbc.CardHeader("Warehouse Health Status"),
+                                dbc.CardBody(health_table),
                             ]
                         ),
                     ]

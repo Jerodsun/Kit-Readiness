@@ -1,4 +1,47 @@
 import dash_bootstrap_components as dbc
+from dash import html
+import dash_bootstrap_components as dbc
+
+
+def create_layout():
+    return html.Div(
+        [
+            html.H1("Readiness Dashboard", className="header"),
+            html.Div(
+                [
+                    # Left column
+                    html.Div(
+                        [
+                            dbc.Tabs(
+                                [
+                                    dbc.Tab(label="Home", tab_id="home"),
+                                    dbc.Tab(
+                                        label="Warehouse Inventory",
+                                        tab_id="warehouse-inventory",
+                                    ),
+                                    dbc.Tab(
+                                        label="Warehouse Health",
+                                        tab_id="warehouse-health",
+                                    ),
+                                    dbc.Tab(label="Tab 3", tab_id="tab-3"),
+                                ],
+                                id="tabs",
+                                active_tab="home",
+                            ),
+                            # ...rest of existing layout...
+                        ],
+                        className="left-column",
+                    ),
+                    # Right column
+                    html.Div(id="dashboard-content", className="right-column"),
+                ],
+                className="main-content",
+            ),
+            html.Div(id="inventory-management", style={"display": "none"}),
+        ]
+    )
+
+
 from dash import html, dcc
 import plotly.express as px
 from database.connector import get_all_warehouses
@@ -39,6 +82,10 @@ def create_layout():
                             dbc.Tabs(
                                 [
                                     dbc.Tab(label="Home", tab_id="home"),
+                                    dbc.Tab(
+                                        label="Warehouse Health",
+                                        tab_id="warehouse-health",
+                                    ),
                                     dbc.Tab(
                                         label="Warehouse Inventory",
                                         tab_id="warehouse-inventory",
