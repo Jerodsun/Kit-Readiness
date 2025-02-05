@@ -14,6 +14,9 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 # Initialize the Dash app
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
+# Include custom CSS
+app.css.append_css({"external_url": "/assets/style.css"})
+
 # Set the layout of the app
 app.layout = create_layout()
 
