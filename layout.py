@@ -84,8 +84,7 @@ def create_layout():
                             html.Div(
                                 [
                                     dcc.Dropdown(
-                                        id="kit-calculator-warehouse",
-                                        className="mb-4"
+                                        id="kit-calculator-warehouse", className="mb-4"
                                     ),
                                 ],
                                 id="kit-calculator-warehouse-selector",
