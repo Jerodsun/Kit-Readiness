@@ -62,3 +62,13 @@ CREATE TABLE
         FOREIGN KEY (kit_id) REFERENCES kits (kit_id),
         PRIMARY KEY (warehouse_id, kit_id, completed_at)
     );
+
+-- Destinations table
+CREATE TABLE
+    destinations (
+        destination_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        destination_name TEXT NOT NULL,
+        latitude REAL,
+        longitude REAL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
