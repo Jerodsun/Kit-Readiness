@@ -30,7 +30,29 @@ def create_layout():
 
     return html.Div(
         [
-            html.H1("Readiness Dashboard", className="header"),
+            html.Div([
+                html.H1("Readiness Dashboard", className="header"),
+                html.A(
+                    dbc.Button(
+                        "Help 📖",
+                        id="help-button",
+                        color="secondary",
+                        size="sm",
+                        className="ms-2"
+                    ),
+                    href="/assets/documentation.pdf",
+                    target="_blank",
+                    style={
+                        'position': 'absolute',
+                        'right': '20px',
+                        'top': '20px'
+                    }
+                ),
+            ], style={
+                'position': 'relative',
+                'width': '100%',
+                'marginBottom': '20px'
+            }),
             html.Div(
                 [
                     # Left column

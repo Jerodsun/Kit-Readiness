@@ -51,9 +51,9 @@ def register_callbacks(app):
                                         html.H4("About", className="card-title"),
                                         html.P(
                                             """
-                            The Kit Readiness Dashboard helps you monitor and manage kit assembly 
+                            The Kit Readiness Dashboard helps you monitor and manage component assembly 
                             across multiple warehouses. Track component availability, calculate potential 
-                            kit completions, and optimize inventory distribution.
+                            completions, and optimize inventory distribution.
                         """
                                         ),
                                     ]
