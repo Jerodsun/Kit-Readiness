@@ -7,14 +7,14 @@ from database.connector import get_all_warehouses
 def create_layout():
     # Get warehouse data
     warehouses = get_all_warehouses()
-    
+
     # Create map
     fig = px.scatter_mapbox(
-        lat=[w['latitude'] for w in warehouses],
-        lon=[w['longitude'] for w in warehouses],
-        hover_name=[w['warehouse_name'] for w in warehouses],
+        lat=[w["latitude"] for w in warehouses],
+        lon=[w["longitude"] for w in warehouses],
+        hover_name=[w["warehouse_name"] for w in warehouses],
         zoom=3,
-        mapbox_style="carto-positron"
+        mapbox_style="carto-positron",
     )
 
     fig.update_layout(
@@ -50,18 +50,37 @@ def create_layout():
                             ),
                             html.Div(id="dashboard-content"),
                             # Add inventory management container to initial layout
-                            html.Div([
-                                dbc.Row([
-                                    dbc.Col([
-                                        html.Label("Select Warehouse:"),
-                                        dcc.Dropdown(id="warehouse-selector", className="mb-4"),
-                                    ], width=6),
-                                    dbc.Col([
-                                        dbc.Button("Add New Item", color="primary", className="float-end"),
-                                    ], width=6),
-                                ]),
-                                html.Div(id="inventory-table-container")
-                            ], id="inventory-management", style={'display': 'none'})  # Hidden by default
+                            html.Div(
+                                [
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                [
+                                                    html.Label("Select Warehouse:"),
+                                                    dcc.Dropdown(
+                                                        id="warehouse-selector",
+                                                        className="mb-4",
+                                                    ),
+                                                ],
+                                                width=6,
+                                            ),
+                                            dbc.Col(
+                                                [
+                                                    dbc.Button(
+                                                        "Add New Item",
+                                                        color="primary",
+                                                        className="float-end",
+                                                    ),
+                                                ],
+                                                width=6,
+                                            ),
+                                        ]
+                                    ),
+                                    html.Div(id="inventory-table-container"),
+                                ],
+                                id="inventory-management",
+                                style={"display": "none"},
+                            ),  # Hidden by default
                         ],
                         className="left-column",
                     ),
