@@ -1,6 +1,11 @@
 from dash import Input, Output, html, dash_table
 import dash_bootstrap_components as dbc
 from database.connector import get_all_warehouses, get_warehouse_inventory
+from dash.exceptions import PreventUpdate
+import logging
+
+# Get logger
+logger = logging.getLogger(__name__)
 
 
 def register_callbacks(app):
@@ -128,12 +133,18 @@ def register_callbacks(app):
     @app.callback(Output("warehouse-selector", "options"), Input("tabs", "active_tab"))
     def populate_warehouse_dropdown(active_tab):
         if active_tab == "warehouse-inventory":
-            warehouses = get_all_warehouses()
-            return [
-                {"label": w["warehouse_name"], "value": w["warehouse_id"]}
-                for w in warehouses
-            ]
-        return []
+            try:
+                warehouses = get_all_warehouses()
+                if not warehouses:
+                    raise ValueError("No warehouses found")
+                return [
+                    {"label": w["warehouse_name"], "value": w["warehouse_id"]}
+                    for w in warehouses
+                ]
+            except Exception as e:
+                logger.error(f"Error fetching warehouses: {e}")
+                return []
+        raise PreventUpdate
 
     @app.callback(
         Output("inventory-table-container", "children"),
