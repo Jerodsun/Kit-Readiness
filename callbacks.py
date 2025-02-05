@@ -237,20 +237,29 @@ def register_callbacks(app):
 
         return html.Div("Select a tab to see dashboard content"), inventory_style
 
-    @app.callback(Output("warehouse-selector", "options"), Input("tabs", "active_tab"))
+    @app.callback(
+        [
+            Output("warehouse-selector", "options"),
+            Output("warehouse-selector", "value"),
+        ],
+        Input("tabs", "active_tab"),
+    )
     def populate_warehouse_dropdown(active_tab):
         if active_tab == "warehouse-inventory":
             try:
                 warehouses = get_all_warehouses()
                 if not warehouses:
                     raise ValueError("No warehouses found")
-                return [
+                options = [
                     {"label": w["warehouse_name"], "value": w["warehouse_id"]}
                     for w in warehouses
                 ]
+                # Set default value to first warehouse's ID if available
+                default_value = warehouses[0]["warehouse_id"] if warehouses else None
+                return options, default_value
             except Exception as e:
                 logger.error(f"Error fetching warehouses: {e}")
-                return []
+                return [], None
         raise PreventUpdate
 
     @app.callback(
