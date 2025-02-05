@@ -310,9 +310,13 @@ def update_warehouse_inventory(warehouse_id, updates):
             return False
 
 
-def create_shipment(warehouse_id, destination_id, kit_id, quantity, shipment_date):
+def create_shipment(
+    warehouse_id, destination_id, component_id, quantity, shipment_date
+):
     """Creates a new shipment record"""
-    logger.info(f"Creating shipment from warehouse {warehouse_id} to destination {destination_id}")
+    logger.info(
+        f"Creating shipment from warehouse {warehouse_id} to destination {destination_id}"
+    )
     with get_db_connection() as conn:
         cursor = conn.cursor()
         try:
@@ -320,10 +324,10 @@ def create_shipment(warehouse_id, destination_id, kit_id, quantity, shipment_dat
                 """
                 INSERT INTO shipments (
                     shipment_date, warehouse_id, destination_id, 
-                    kit_id, quantity
+                    component_id, quantity
                 ) VALUES (?, ?, ?, ?, ?)
                 """,
-                (shipment_date, warehouse_id, destination_id, kit_id, quantity)
+                (shipment_date, warehouse_id, destination_id, component_id, quantity),
             )
             conn.commit()
             return True
@@ -331,3 +335,28 @@ def create_shipment(warehouse_id, destination_id, kit_id, quantity, shipment_dat
             logger.error(f"Error creating shipment: {e}")
             conn.rollback()
             return False
+
+
+def get_scheduled_shipments():
+    """Fetches all scheduled shipments with related information"""
+    logger.info("Fetching scheduled shipments")
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        result = cursor.execute(
+            """
+            SELECT 
+                s.shipment_id,
+                s.shipment_date,
+                w.warehouse_name as source_warehouse,
+                d.destination_name,
+                c.component_name,
+                s.quantity
+            FROM shipments s
+            JOIN warehouses w ON s.warehouse_id = w.warehouse_id
+            JOIN destinations d ON s.destination_id = d.destination_id
+            JOIN components c ON s.component_id = c.component_id
+            ORDER BY s.shipment_date DESC
+            """
+        ).fetchall()
+        logger.info(f"Retrieved {len(result)} shipments")
+        return result
