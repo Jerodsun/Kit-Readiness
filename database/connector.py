@@ -11,16 +11,16 @@ DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 if DEBUG:
     logging.basicConfig(
         level=logging.DEBUG,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 else:
     logging.basicConfig(
-        level=logging.ERROR,  # Only show errors
-        format='%(levelname)s: %(message)s'
+        level=logging.ERROR, format="%(levelname)s: %(message)s"  # Only show errors
     )
     logging.getLogger().disabled = True  # Disable all logging
 
 logger = logging.getLogger(__name__)
+
 
 @contextmanager
 def get_db_connection():
@@ -33,6 +33,7 @@ def get_db_connection():
         conn.close()
         logger.info("Database connection closed.")
 
+
 def get_all_warehouses():
     logger.info("Fetching all warehouses.")
     with get_db_connection() as conn:
@@ -44,6 +45,7 @@ def get_all_warehouses():
         ).fetchall()
         logger.info(f"Retrieved {len(result)} warehouses.")
         return result
+
 
 def get_warehouse_inventory(warehouse_id):
     logger.info(f"Fetching inventory for warehouse ID: {warehouse_id}.")
@@ -61,8 +63,11 @@ def get_warehouse_inventory(warehouse_id):
         """,
             (warehouse_id,),
         ).fetchall()
-        logger.info(f"Retrieved {len(result)} inventory items for warehouse ID: {warehouse_id}.")
+        logger.info(
+            f"Retrieved {len(result)} inventory items for warehouse ID: {warehouse_id}."
+        )
         return result
+
 
 def get_kit_details():
     logger.info("Fetching all kit details.")
