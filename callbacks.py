@@ -357,12 +357,14 @@ def register_callbacks(app):
         [
             Output("kit-calculation-results", "children"),
             Output("kit-components-detail", "children"),
+            Output('kit-calculation-results', 'style'),
+            Output('kit-components-detail', 'style'),
         ],
         [Input("kit-calculator-warehouse", "value")],
     )
     def update_kit_calculations(warehouse_id):
         if not warehouse_id:
-            return html.Div("Please select a warehouse."), None
+            return html.Div("Please select a warehouse."), None, {'display': 'none'}, {'display': 'none'}
 
         # Get possible kits calculation
         possible_kits = calculate_possible_kits(warehouse_id)

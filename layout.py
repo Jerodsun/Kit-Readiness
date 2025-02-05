@@ -81,16 +81,16 @@ def create_layout():
                             # Add kit calculator containers
                             html.Div(id="kit-calculation-results"),
                             html.Div(id="kit-components-detail"),
-                            # html.Div(
-                            #     [
-                            #         dcc.Dropdown(
-                            #             id="kit-calculator-warehouse",
-                            #             className="mb-4"
-                            #         ),
-                            #     ],
-                            #     id="kit-calculator-warehouse-selector",
-                            #     style={"display": "none"},
-                            # ),
+                            html.Div(
+                                [
+                                    dcc.Dropdown(
+                                        id="kit-calculator-warehouse",
+                                        className="mb-4"
+                                    ),
+                                ],
+                                id="kit-calculator-warehouse-selector",
+                                style={"display": "none"},
+                            ),
                         ],
                         className="left-column",
                     ),
