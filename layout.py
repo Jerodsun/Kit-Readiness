@@ -1,7 +1,8 @@
 import dash_bootstrap_components as dbc
-from dash import html, dcc
+from dash import html, dcc, dash_table
 import plotly.express as px
 from database.connector import get_all_warehouses
+from datetime import date
 
 
 def create_layout():
@@ -32,7 +33,7 @@ def create_layout():
         [
             html.Div(
                 [
-                    html.H1("Readiness Dashboard", className="header"),
+                    html.H1("Inventory Readiness Dashboard", className="header"),
                     html.A(
                         dbc.Button(
                             "Help 📖",
@@ -43,10 +44,9 @@ def create_layout():
                         ),
                         href="/assets/documentation.pdf",
                         target="_blank",
-                        style={"position": "absolute", "right": "20px", "top": "20px"},
                     ),
                 ],
-                style={"position": "relative", "width": "100%", "marginBottom": "20px"},
+                className="header",
             ),
             html.Div(
                 [
@@ -72,6 +72,14 @@ def create_layout():
                                         label="Rebalance Warehouses",
                                         tab_id="rebalance-warehouses",
                                     ),
+                                    dbc.Tab(
+                                        label="Scheduled Transfers",
+                                        tab_id="scheduled-transfers",
+                                    ),
+                                    dbc.Tab(
+                                        label="Scheduled Shipments",
+                                        tab_id="scheduled-shipments",
+                                    ),
                                 ],
                                 id="tabs",
                                 active_tab="home",
@@ -94,7 +102,50 @@ def create_layout():
                                             ),
                                         ]
                                     ),
-                                    html.Div(id="inventory-table-container"),
+                                    html.Div(
+                                        dash_table.DataTable(
+                                            id="inventory-table",
+                                            columns=[
+                                                {
+                                                    "name": "Component",
+                                                    "id": "component_name",
+                                                    "editable": False,
+                                                },
+                                                {
+                                                    "name": "Description",
+                                                    "id": "description",
+                                                    "editable": False,
+                                                },
+                                                {
+                                                    "name": "Quantity",
+                                                    "id": "quantity",
+                                                    "editable": True,
+                                                    "type": "numeric",
+                                                },
+                                                {
+                                                    "name": "Minimum Healthy Stock",
+                                                    "id": "min_stock",
+                                                    "editable": False,
+                                                },
+                                                {
+                                                    "name": "Maximum Warehouse Capacity",
+                                                    "id": "max_stock",
+                                                    "editable": False,
+                                                },
+                                            ],
+                                            data=[],
+                                            style_table={"overflowX": "auto"},
+                                        ),
+                                        id="inventory-table-container",
+                                    ),
+                                    dbc.Button(
+                                        "Save Changes",
+                                        id="save-inventory",
+                                        color="primary",
+                                        className="mt-3",
+                                        style={"display": "none"},  # Hidden by default
+                                    ),
+                                    html.Div(id="save-status", className="mt-2"),
                                 ],
                                 id="inventory-management",
                                 style={"display": "none"},
@@ -124,7 +175,19 @@ def create_layout():
                                                         className="mb-4",
                                                     ),
                                                 ],
-                                                width=6,
+                                                width=5,
+                                            ),
+                                            dbc.Col(
+                                                dbc.Button(
+                                                    "⇄",
+                                                    id="swap-warehouses-button",
+                                                    color="primary",
+                                                    className="mb-4",
+                                                    style={"width": "50px"},
+                                                ),
+                                                width=2,
+                                                className="d-flex align-items-end justify-content-center",
+                                                style={"width": "80px"},
                                             ),
                                             dbc.Col(
                                                 [
@@ -136,9 +199,10 @@ def create_layout():
                                                         className="mb-4",
                                                     ),
                                                 ],
-                                                width=6,
+                                                width=5,
                                             ),
-                                        ]
+                                        ],
+                                        className="d-flex align-items-end justify-content-center",
                                     ),
                                     dbc.Row(
                                         [
@@ -155,7 +219,7 @@ def create_layout():
                                                         className="form-control mb-4",
                                                     ),
                                                 ],
-                                                width=6,
+                                                width=2,
                                             ),
                                             dbc.Col(
                                                 [
@@ -170,12 +234,87 @@ def create_layout():
                                                         className="form-control mb-4",
                                                     ),
                                                 ],
-                                                width=6,
+                                                width=2,
                                             ),
-                                        ]
+                                        ],
+                                        className="d-flex align-items-end justify-content-center",
                                     ),
                                     html.Div(id="rebalance-suggestions"),
                                     html.Div(id="transfer-form"),
+                                    # Add Store for suggestions data
+                                    dcc.Store(id="suggestions-store"),
+                                    # Add blank hidden components to satisfy callback requirements
+                                    html.Div(
+                                        dcc.Dropdown(id="transfer-component-selector"),
+                                        style={"display": "none"},
+                                    ),
+                                    html.Div(
+                                        dbc.Input(
+                                            id="transfer-quantity", type="number"
+                                        ),
+                                        style={"display": "none"},
+                                    ),
+                                    html.Div(
+                                        dbc.Button(id="schedule-transfers", n_clicks=0),
+                                        style={"display": "none"},
+                                    ),
+                                    # Add transfer modal
+                                    dbc.Modal(
+                                        [
+                                            dbc.ModalHeader("Schedule Transfer"),
+                                            dbc.ModalBody(
+                                                [
+                                                    dbc.Form(
+                                                        [
+                                                            dbc.Row(
+                                                                [
+                                                                    dbc.Col(
+                                                                        [
+                                                                            html.Label(
+                                                                                "Shipment Date:"
+                                                                            ),
+                                                                            dcc.DatePickerSingle(
+                                                                                id="shipment-date",
+                                                                                min_date_allowed=date.today(),
+                                                                                date=date.today(),
+                                                                                className="mb-3",
+                                                                            ),
+                                                                        ]
+                                                                    )
+                                                                ]
+                                                            ),
+                                                            html.Div(
+                                                                id="transfer-kit-selector"
+                                                            ),
+                                                            html.Div(
+                                                                id="transfer-quantity-input"
+                                                            ),
+                                                            html.Div(
+                                                                id="transfer-message",
+                                                                className="mt-3",
+                                                            ),
+                                                        ]
+                                                    )
+                                                ]
+                                            ),
+                                            dbc.ModalFooter(
+                                                [
+                                                    dbc.Button(
+                                                        "Cancel",
+                                                        id="cancel-transfer",
+                                                        className="me-2",
+                                                    ),
+                                                    dbc.Button(
+                                                        "Confirm Transfer",
+                                                        id="confirm-transfer",
+                                                        color="primary",
+                                                    ),
+                                                ]
+                                            ),
+                                        ],
+                                        id="transfer-modal",
+                                        is_open=False,
+                                    ),
                                 ],
                                 id="rebalance-container",
                                 style={"display": "none"},

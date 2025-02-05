@@ -101,25 +101,48 @@ def get_warehouse_health_metrics():
         return result
 
 
-def get_kit_components():
+def get_kit_components(warehouse_id=None):
+    """Fetches kit component mappings with current inventory if warehouse specified"""
     logger.info("Fetching kit component mappings")
     with get_db_connection() as conn:
         cursor = conn.cursor()
-        result = cursor.execute(
-            """
-            SELECT 
-                k.kit_id,
-                k.kit_name,
-                k.description as kit_description,
-                c.component_id,
-                c.component_name,
-                kc.quantity as required_quantity
-            FROM kits k
-            JOIN kit_components kc ON k.kit_id = kc.kit_id
-            JOIN components c ON kc.component_id = c.component_id
-            ORDER BY k.kit_name, c.component_name
-        """
-        ).fetchall()
+        if warehouse_id:
+            result = cursor.execute(
+                """
+                SELECT 
+                    k.kit_id,
+                    k.kit_name,
+                    k.description as kit_description,
+                    c.component_id,
+                    c.component_name,
+                    kc.quantity as required_quantity,
+                    COALESCE(wi.quantity, 0) as current_inventory,
+                    FLOOR(CAST(COALESCE(wi.quantity, 0) AS FLOAT) / kc.quantity) as possible_completions
+                FROM kits k
+                JOIN kit_components kc ON k.kit_id = kc.kit_id
+                JOIN components c ON kc.component_id = c.component_id
+                LEFT JOIN warehouse_inventory wi ON c.component_id = wi.component_id 
+                    AND wi.warehouse_id = ?
+                ORDER BY k.kit_name, c.component_name
+                """,
+                (warehouse_id,),
+            ).fetchall()
+        else:
+            result = cursor.execute(
+                """
+                SELECT 
+                    k.kit_id,
+                    k.kit_name,
+                    k.description as kit_description,
+                    c.component_id,
+                    c.component_name,
+                    kc.quantity as required_quantity
+                FROM kits k
+                JOIN kit_components kc ON k.kit_id = kc.kit_id
+                JOIN components c ON kc.component_id = c.component_id
+                ORDER BY k.kit_name, c.component_name
+                """
+            ).fetchall()
         return result
 
 
@@ -281,3 +304,128 @@ def calculate_rebalance_suggestions(
                 "dest_kits": current_dest_kits,
             },
         }
+
+
+def update_warehouse_inventory(warehouse_id, updates):
+    """
+    Updates inventory quantities for a warehouse
+    updates: list of dicts with component_id and new quantity
+    """
+    logger.info(f"Updating inventory for warehouse {warehouse_id}")
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            for update in updates:
+                cursor.execute(
+                    """
+                    UPDATE warehouse_inventory
+                    SET quantity = ?
+                    WHERE warehouse_id = ? AND component_id = ?
+                    """,
+                    (update["quantity"], warehouse_id, update["component_id"]),
+                )
+            conn.commit()
+            logger.info(f"Successfully updated {len(updates)} inventory items")
+            return True
+        except Exception as e:
+            logger.error(f"Error updating inventory: {e}")
+            conn.rollback()
+            return False
+
+
+def create_warehouse_transfer(
+    source_id, dest_id, component_id, quantity, transfer_date
+):
+    """Creates a new warehouse transfer record"""
+    logger.info(f"Creating transfer from warehouse {source_id} to warehouse {dest_id}")
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                """
+                INSERT INTO warehouse_transfers (
+                    transfer_date, source_warehouse_id, destination_warehouse_id,
+                    component_id, quantity
+                ) VALUES (?, ?, ?, ?, ?)
+                """,
+                (transfer_date, source_id, dest_id, component_id, quantity),
+            )
+            conn.commit()
+            return True
+        except Exception as e:
+            logger.error(f"Error creating transfer: {e}")
+            conn.rollback()
+            return False
+
+
+def create_end_shipment(warehouse_id, destination_id, kit_id, quantity, shipment_date):
+    """Creates a new end-user shipment record"""
+    logger.info(
+        f"Creating shipment from warehouse {warehouse_id} to destination {destination_id}"
+    )
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                """
+                INSERT INTO end_shipments (
+                    shipment_date, warehouse_id, destination_id,
+                    kit_id, quantity
+                ) VALUES (?, ?, ?, ?, ?)
+                """,
+                (shipment_date, warehouse_id, destination_id, kit_id, quantity),
+            )
+            conn.commit()
+            return True
+        except Exception as e:
+            logger.error(f"Error creating shipment: {e}")
+            conn.rollback()
+            return False
+
+
+def get_warehouse_transfers():
+    """Fetches all scheduled transfers between warehouses"""
+    logger.info("Fetching scheduled warehouse transfers")
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        result = cursor.execute(
+            """
+            SELECT 
+                t.transfer_id,
+                t.transfer_date,
+                w_source.warehouse_name as source_warehouse,
+                w_dest.warehouse_name as destination_warehouse,
+                c.component_name,
+                t.quantity
+            FROM warehouse_transfers t
+            JOIN warehouses w_source ON t.source_warehouse_id = w_source.warehouse_id
+            JOIN warehouses w_dest ON t.destination_warehouse_id = w_dest.warehouse_id
+            JOIN components c ON t.component_id = c.component_id
+            ORDER BY t.transfer_date DESC
+            """
+        ).fetchall()
+        return result
+
+
+def get_end_user_shipments():
+    """Fetches all scheduled shipments to end users"""
+    logger.info("Fetching scheduled end-user shipments")
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        result = cursor.execute(
+            """
+            SELECT 
+                s.shipment_id,
+                s.shipment_date,
+                w.warehouse_name as source_warehouse,
+                d.destination_name,
+                k.kit_name,
+                s.quantity
+            FROM end_shipments s
+            JOIN warehouses w ON s.warehouse_id = w.warehouse_id
+            JOIN destinations d ON s.destination_id = d.destination_id
+            JOIN kits k ON s.kit_id = k.kit_id
+            ORDER BY s.shipment_date DESC
+            """
+        ).fetchall()
+        return result

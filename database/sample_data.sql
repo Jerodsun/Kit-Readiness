@@ -36,9 +36,9 @@ VALUES
     (2, 5, 4), -- Emergency Kit: 4 Batteries
     (3, 6, 5), -- First Aid Kit: 5 Bandages
     (3, 7, 10), -- First Aid Kit: 10 Antiseptic Wipes
-    (3, 8, 2);
+    (3, 8, 2) -- First Aid Kit: 2 Gauze Rolls
+;
 
--- First Aid Kit: 2 Gauze Rolls
 -- Sample Warehouses
 INSERT INTO
     warehouses (warehouse_name, location, latitude, longitude)
@@ -180,3 +180,25 @@ VALUES
     (12, 3, 24), -- Minneapolis: 24 First Aid Kits
     (13, 1, 11) -- Omaha: 11 Tool Kits
 ;
+
+-- Sample Destinations in Mexico
+INSERT INTO
+    destinations (destination_name, latitude, longitude)
+VALUES
+    ('Mexico City', 19.4326, -99.1332),
+    ('Guadalajara', 20.6597, -103.3496),
+    ('Monterrey', 25.6866, -100.3161),
+    ('Cancun', 21.1619, -86.8515),
+    ('Tijuana', 32.5149, -117.0382),
+    ('Puebla', 19.0414, -98.2063),
+    ('Merida', 20.9674, -89.5926),
+    ('Toluca', 19.2826, -99.6557),
+    ('Leon', 21.1619, -101.6868),
+    ('San Luis Potosi', 22.1565, -100.9855),
+    ('Queretaro', 20.5888, -100.3899),
+    ('Chihuahua', 28.6320, -106.0691),
+    ('Morelia', 19.7008, -101.1844),
+    ('Aguascalientes', 21.8853, -102.2916),
+    ('Acapulco', 16.8531, -99.8237);
+
+-- Todo Sample Shipments

@@ -62,3 +62,43 @@ CREATE TABLE
         FOREIGN KEY (kit_id) REFERENCES kits (kit_id),
         PRIMARY KEY (warehouse_id, kit_id, completed_at)
     );
+
+-- Destinations table
+CREATE TABLE
+    destinations (
+        destination_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        destination_name TEXT NOT NULL,
+        latitude REAL,
+        longitude REAL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- Create separate tables for transfers and shipments
+CREATE TABLE warehouse_transfers (
+    transfer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    transfer_date DATE NOT NULL,
+    source_warehouse_id INTEGER NOT NULL,
+    destination_warehouse_id INTEGER NOT NULL,
+    component_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL,
+    scheduled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (source_warehouse_id) REFERENCES warehouses (warehouse_id),
+    FOREIGN KEY (destination_warehouse_id) REFERENCES warehouses (warehouse_id),
+    FOREIGN KEY (component_id) REFERENCES components (component_id)
+);
+
+CREATE TABLE end_shipments (
+    shipment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    shipment_date DATE NOT NULL,
+    scheduled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    warehouse_id INTEGER,
+    destination_id INTEGER,
+    kit_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL,
+    FOREIGN KEY (warehouse_id) REFERENCES warehouses (warehouse_id),
+    FOREIGN KEY (destination_id) REFERENCES destinations (destination_id),
+    FOREIGN KEY (kit_id) REFERENCES kits (kit_id)
+);
+
+-- Drop the old shipments table (after migrating data if needed)
+DROP TABLE IF EXISTS shipments;
