@@ -1,33 +1,55 @@
 import sqlite3
+import logging
+import os
 from contextlib import contextmanager
 
 DATABASE_PATH = "database/kit_readiness.db"
 
+# Configure logging based on env
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+
+if DEBUG:
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+else:
+    logging.basicConfig(
+        level=logging.ERROR,  # Only show errors
+        format='%(levelname)s: %(message)s'
+    )
+    logging.getLogger().disabled = True  # Disable all logging
+
+logger = logging.getLogger(__name__)
 
 @contextmanager
 def get_db_connection():
+    logger.info("Connecting to the database.")
     conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     try:
         yield conn
     finally:
         conn.close()
-
+        logger.info("Database connection closed.")
 
 def get_all_warehouses():
+    logger.info("Fetching all warehouses.")
     with get_db_connection() as conn:
         cursor = conn.cursor()
-        return cursor.execute(
+        result = cursor.execute(
             """
             SELECT * FROM warehouses
         """
         ).fetchall()
-
+        logger.info(f"Retrieved {len(result)} warehouses.")
+        return result
 
 def get_warehouse_inventory(warehouse_id):
+    logger.info(f"Fetching inventory for warehouse ID: {warehouse_id}.")
     with get_db_connection() as conn:
         cursor = conn.cursor()
-        return cursor.execute(
+        result = cursor.execute(
             """
             SELECT 
                 wi.*, 
@@ -39,13 +61,17 @@ def get_warehouse_inventory(warehouse_id):
         """,
             (warehouse_id,),
         ).fetchall()
-
+        logger.info(f"Retrieved {len(result)} inventory items for warehouse ID: {warehouse_id}.")
+        return result
 
 def get_kit_details():
+    logger.info("Fetching all kit details.")
     with get_db_connection() as conn:
         cursor = conn.cursor()
-        return cursor.execute(
+        result = cursor.execute(
             """
             SELECT * FROM kits
         """
         ).fetchall()
+        logger.info(f"Retrieved {len(result)} kits.")
+        return result
