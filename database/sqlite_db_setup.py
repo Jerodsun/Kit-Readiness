@@ -5,7 +5,7 @@ import argparse
 
 def init_database(overwrite=False):
     # Create database directory if it doesn't exist
-    os.makedirs('database', exist_ok=True)
+    os.makedirs("database", exist_ok=True)
 
     db_path = "database/kit_readiness.db"
 
@@ -14,7 +14,9 @@ def init_database(overwrite=False):
             os.remove(db_path)
             print(f"Database '{db_path}' has been deleted.")
         else:
-            print(f"Database '{db_path}' already exists. Use --overwrite to overwrite it.")
+            print(
+                f"Database '{db_path}' already exists. Use --overwrite to overwrite it."
+            )
             return
 
     # Connect to SQLite database (creates it if it doesn't exist)
@@ -43,8 +45,14 @@ def init_database(overwrite=False):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Initialize the Kit Readiness database.")
-    parser.add_argument('--overwrite', action='store_true', help="Overwrite the existing database if it exists.")
+    parser = argparse.ArgumentParser(
+        description="Initialize the Kit Readiness database."
+    )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Overwrite the existing database if it exists.",
+    )
     args = parser.parse_args()
 
     init_database(overwrite=args.overwrite)
