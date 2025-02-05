@@ -180,3 +180,50 @@ VALUES
     (12, 3, 24), -- Minneapolis: 24 First Aid Kits
     (13, 1, 11) -- Omaha: 11 Tool Kits
 ;
+
+-- Sample Destinations in Mexico
+INSERT INTO
+    destinations (destination_name, latitude, longitude)
+VALUES
+    ('Mexico City', 19.4326, -99.1332),
+    ('Guadalajara', 20.6597, -103.3496),
+    ('Monterrey', 25.6866, -100.3161),
+    ('Cancun', 21.1619, -86.8515),
+    ('Tijuana', 32.5149, -117.0382),
+    ('Puebla', 19.0414, -98.2063),
+    ('Merida', 20.9674, -89.5926),
+    ('Toluca', 19.2826, -99.6557),
+    ('Leon', 21.1619, -101.6868),
+    ('San Luis Potosi', 22.1565, -100.9855),
+    ('Queretaro', 20.5888, -100.3899),
+    ('Chihuahua', 28.6320, -106.0691),
+    ('Morelia', 19.7008, -101.1844),
+    ('Aguascalientes', 21.8853, -102.2916),
+    ('Acapulco', 16.8531, -99.8237);
+
+-- Sample Shipments
+INSERT INTO
+    shipments (
+        shipment_date,
+        warehouse_id,
+        destination_id,
+        kit_id,
+        quantity
+    )
+VALUES
+    ('2023-01-15', 1, 1, 1, 5) --, -- NY to Mexico City: 5 Tool Kits
+    -- ('2023-01-20', 2, 2, 2, 10), -- LA to Guadalajara: 10 Emergency Kits
+    -- ('2023-01-25', 3, 3, 3, 15), -- Chicago to Monterrey: 15 First Aid Kits
+    -- ('2023-02-01', 4, 4, 1, 8), -- Houston to Cancun: 8 Tool Kits
+    -- ('2023-02-05', 5, 5, 2, 12), -- Denver to Tijuana: 12 Emergency Kits
+    -- ('2023-02-10', 6, 6, 3, 20), -- Seattle to Puebla: 20 First Aid Kits
+    -- ('2023-02-15', 7, 7, 1, 10), -- Phoenix to Merida: 10 Tool Kits
+    -- ('2023-02-20', 8, 8, 2, 14), -- Kansas City to Toluca: 14 Emergency Kits
+    -- ('2023-02-25', 9, 9, 3, 18), -- Boston to Leon: 18 First Aid Kits
+    -- ('2023-03-01', 10, 10, 1, 12), -- Miami to San Luis Potosi: 12 Tool Kits
+    -- ('2023-03-05', 11, 11, 2, 16), -- Cleveland to Queretaro: 16 Emergency Kits
+    -- ('2023-03-10', 12, 12, 3, 22), -- Minneapolis to Chihuahua: 22 First Aid Kits
+    -- ('2023-03-15', 13, 13, 1, 9), -- Omaha to Morelia: 9 Tool Kits
+    -- ('2023-03-20', 14, 14, 2, 11), -- Plains to Aguascalientes: 11 Emergency Kits
+    -- ('2023-03-25', 1, 15, 3, 13) -- NY to Acapulco: 13 First Aid Kits
+;

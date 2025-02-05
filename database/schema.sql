@@ -72,3 +72,17 @@ CREATE TABLE
         longitude REAL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+
+-- Shipments table
+CREATE TABLE
+    shipments (
+        shipment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        shipment_date DATE NOT NULL,
+        warehouse_id INTEGER,
+        destination_id INTEGER,
+        kit_id INTEGER,
+        quantity INTEGER NOT NULL,
+        FOREIGN KEY (warehouse_id) REFERENCES warehouses (warehouse_id),
+        FOREIGN KEY (destination_id) REFERENCES destinations (destination_id),
+        FOREIGN KEY (kit_id) REFERENCES kits (kit_id)
+    );
