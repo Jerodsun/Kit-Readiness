@@ -9,9 +9,13 @@ def init_database(overwrite=False):
 
     db_path = "database/kit_readiness.db"
 
-    if os.path.exists(db_path) and not overwrite:
-        print(f"Database '{db_path}' already exists. Use --overwrite to overwrite it.")
-        return
+    if os.path.exists(db_path):
+        if overwrite:
+            os.remove(db_path)
+            print(f"Database '{db_path}' has been deleted.")
+        else:
+            print(f"Database '{db_path}' already exists. Use --overwrite to overwrite it.")
+            return
 
     # Connect to SQLite database (creates it if it doesn't exist)
     conn = sqlite3.connect(db_path)
