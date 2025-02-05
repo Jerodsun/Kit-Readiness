@@ -135,25 +135,30 @@ VALUES
     (3, 6, 150, 50, 300), -- Chicago: 150 Bandages
     (3, 7, 300, 100, 500), -- Chicago: 300 Antiseptic Wipes
     (3, 8, 80, 40, 200), -- Chicago: 80 Gauze Rolls
-    (4, 1, 60, 20, 100), -- Houston: 60 Hammers
-    (4, 2, 80, 30, 150), -- Houston: 80 Screwdriver Sets
-    (5, 3, 50, 20, 100), -- Denver: 50 Wrench Sets
-    (5, 4, 120, 40, 200), -- Denver: 120 Flashlights
-    (6, 5, 220, 100, 500), -- Seattle: 220 Batteries
-    (6, 6, 160, 50, 300), -- Seattle: 160 Bandages
-    (7, 7, 320, 100, 500), -- Phoenix: 320 Antiseptic Wipes
-    (7, 8, 90, 40, 200), -- Phoenix: 90 Gauze Rolls
-    (8, 1, 55, 20, 100), -- Kansas City: 55 Hammers
-    (8, 2, 70, 30, 150), -- Kansas City: 70 Screwdriver Sets
-    (9, 3, 45, 20, 100), -- Boston: 45 Wrench Sets
-    (9, 4, 110, 40, 200), -- Boston: 110 Flashlights
-    (10, 5, 210, 100, 500), -- Miami: 210 Batteries
+    (4, 1, 85, 20, 100), -- Houston: 85 Hammers
+    (4, 2, 130, 30, 150), -- Houston: 130 Screwdriver Sets
+    (5, 3, 85, 20, 100), -- Denver: 85 Wrench Sets
+    (5, 4, 170, 40, 200), -- Denver: 170 Flashlights
+    (6, 5, 425, 100, 500), -- Seattle: 425 Batteries
+    (6, 6, 255, 50, 300), -- Seattle: 255 Bandages
+    (7, 7, 425, 100, 500), -- Phoenix: 425 Antiseptic Wipes
+    (7, 8, 170, 40, 200), -- Phoenix: 170 Gauze Rolls
+    (8, 1, 85, 20, 100), -- Kansas City: 85 Hammers
+    (8, 2, 130, 30, 150), -- Kansas City: 130 Screwdriver Sets
+    (9, 3, 85, 20, 100), -- Boston: 85 Wrench Sets
+    (9, 4, 170, 40, 200), -- Boston: 170 Flashlights
+    (10, 5, 425, 100, 500), -- Miami: 425 Batteries
     (10, 6, 155, 50, 300), -- Miami: 155 Bandages
     (11, 7, 310, 100, 500), -- Cleveland: 310 Antiseptic Wipes
     (11, 8, 85, 40, 200), -- Cleveland: 85 Gauze Rolls
     (12, 1, 65, 20, 100), -- Minneapolis: 65 Hammers
     (12, 2, 85, 30, 150), -- Minneapolis: 85 Screwdriver Sets
-    (13, 3, 55, 20, 100) -- Omaha: 55 Wrench Sets
+    (13, 3, 55, 20, 100), -- Omaha: 55 Wrench Sets
+    (13, 4, 110, 40, 200), -- Omaha: 110 Flashlights
+    (13, 5, 220, 100, 500), -- Omaha: 220 Batteries
+    (14, 6, 130, 50, 300), -- Plains: 130 Bandages
+    (14, 7, 260, 100, 500), -- Plains: 260 Antiseptic Wipes
+    (14, 8, 100, 40, 200) -- Plains: 100 Gauze Rolls
 ;
 
 -- Chicago: 80 Gauze Rolls

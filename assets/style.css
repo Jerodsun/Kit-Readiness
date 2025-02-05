@@ -135,3 +135,84 @@ h3 {
     margin-bottom: 8px;
     display: block;
 }
+
+/* Enhanced Tab Styling */
+.nav-tabs {
+    padding: 0.5rem 1rem 0;
+    border-bottom: none;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1rem;
+}
+
+.nav-tabs .nav-item {
+    margin-bottom: -2px;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #6c757d;
+    padding: 1rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+    background: transparent;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #3072b4;
+    border-color: rgba(48, 114, 180, 0.3);
+}
+
+.nav-tabs .nav-link.active {
+    color: #3072b4;
+    border-bottom: 2px solid #3072b4;
+    background: linear-gradient(180deg, rgba(48, 114, 180, 0.05) 0%, rgba(48, 114, 180, 0) 100%);
+}
+
+/* Tab content container */
+#dashboard-content {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+/* Tab hover effects */
+.nav-tabs .nav-link::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    right: 50%;
+    height: 2px;
+    background: #3072b4;
+    transition: all 0.3s ease-in-out;
+}
+
+.nav-tabs .nav-link:hover::before {
+    left: 0;
+    right: 0;
+}
+
+/* Active tab indicator */
+.nav-tabs .nav-link.active::before {
+    left: 0;
+    right: 0;
+}
+
+/* Tab icon support */
+.nav-tabs .nav-link i {
+    margin-right: 0.5rem;
+    font-size: 1.1em;
+    vertical-align: middle;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .nav-tabs .nav-link {
+        padding: 0.75rem 1rem;
+    }
+}

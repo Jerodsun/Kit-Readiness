@@ -30,7 +30,29 @@ def create_layout():
 
     return html.Div(
         [
-            html.H1("Readiness Dashboard", className="header"),
+            html.Div([
+                html.H1("Readiness Dashboard", className="header"),
+                html.A(
+                    dbc.Button(
+                        "Help 📖",
+                        id="help-button",
+                        color="secondary",
+                        size="sm",
+                        className="ms-2"
+                    ),
+                    href="/assets/documentation.pdf",
+                    target="_blank",
+                    style={
+                        'position': 'absolute',
+                        'right': '20px',
+                        'top': '20px'
+                    }
+                ),
+            ], style={
+                'position': 'relative',
+                'width': '100%',
+                'marginBottom': '20px'
+            }),
             html.Div(
                 [
                     # Left column
@@ -40,10 +62,17 @@ def create_layout():
                                 [
                                     dbc.Tab(label="Home", tab_id="home"),
                                     dbc.Tab(
+                                        label="Warehouse Health",
+                                        tab_id="warehouse-health",
+                                    ),
+                                    dbc.Tab(
                                         label="Warehouse Inventory",
                                         tab_id="warehouse-inventory",
                                     ),
-                                    dbc.Tab(label="Tab 3", tab_id="tab-3"),
+                                    dbc.Tab(
+                                        label="Kit Calculator",
+                                        tab_id="kit-calculator",
+                                    ),
                                 ],
                                 id="tabs",
                                 active_tab="home",
@@ -71,6 +100,18 @@ def create_layout():
                                 id="inventory-management",
                                 style={"display": "none"},
                             ),  # Hidden by default
+                            # Add kit calculator containers
+                            html.Div(id="kit-calculation-results"),
+                            html.Div(id="kit-components-detail"),
+                            html.Div(
+                                [
+                                    dcc.Dropdown(
+                                        id="kit-calculator-warehouse", className="mb-4"
+                                    ),
+                                ],
+                                id="kit-calculator-warehouse-selector",
+                                style={"display": "none"},
+                            ),
                         ],
                         className="left-column",
                     ),
