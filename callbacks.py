@@ -8,8 +8,9 @@ from database.connector import (
     get_kit_components,
     calculate_rebalance_suggestions,
     update_warehouse_inventory,
-    create_shipment,
-    get_scheduled_shipments,
+    create_warehouse_transfer,
+    get_warehouse_transfers,
+    get_end_user_shipments,
 )
 from dash.exceptions import PreventUpdate
 import plotly.express as px
@@ -296,15 +297,15 @@ def register_callbacks(app):
                 rebalance_style,
             )
 
-        elif active_tab == "scheduled-shipments":
-            shipments = get_scheduled_shipments()
+        elif active_tab == "scheduled-transfers":
+            transfers = get_warehouse_transfers()
 
-            shipments_table = dash_table.DataTable(
-                data=[dict(row) for row in shipments],
+            transfers_table = dash_table.DataTable(
+                data=[dict(row) for row in transfers],
                 columns=[
-                    {"name": "Shipment Date", "id": "shipment_date"},
-                    {"name": "Source", "id": "source_warehouse"},
-                    {"name": "Destination", "id": "destination_name"},
+                    {"name": "Transfer Date", "id": "shipment_date"},
+                    {"name": "From", "id": "source_warehouse"},
+                    {"name": "To", "id": "destination_warehouse"},
                     {"name": "Component", "id": "component_name"},
                     {"name": "Quantity", "id": "quantity"},
                 ],
@@ -321,10 +322,48 @@ def register_callbacks(app):
             return (
                 html.Div(
                     [
-                        html.H3("Scheduled Shipments", className="mb-4"),
+                        html.H3("Scheduled Warehouse Transfers", className="mb-4"),
                         dbc.Card(
                             [
-                                dbc.CardHeader("All Shipments"),
+                                dbc.CardHeader("Component Transfers"),
+                                dbc.CardBody(transfers_table),
+                            ]
+                        ),
+                    ]
+                ),
+                inventory_style,
+                rebalance_style,
+            )
+
+        elif active_tab == "scheduled-shipments":
+            shipments = get_end_user_shipments()
+
+            shipments_table = dash_table.DataTable(
+                data=[dict(row) for row in shipments],
+                columns=[
+                    {"name": "Shipment Date", "id": "shipment_date"},
+                    {"name": "Warehouse", "id": "source_warehouse"},
+                    {"name": "Destination", "id": "destination_name"},
+                    {"name": "Kit", "id": "kit_name"},
+                    {"name": "Quantity", "id": "quantity"},
+                ],
+                style_table={"overflowX": "auto"},
+                style_cell={"textAlign": "left", "padding": "10px"},
+                style_header={
+                    "backgroundColor": "rgb(230, 230, 230)",
+                    "fontWeight": "bold",
+                },
+                sort_action="native",
+                sort_mode="multi",
+            )
+
+            return (
+                html.Div(
+                    [
+                        html.H3("Scheduled End Shipments", className="mb-4"),
+                        dbc.Card(
+                            [
+                                dbc.CardHeader("Kit Shipments"),
                                 dbc.CardBody(shipments_table),
                             ]
                         ),
@@ -898,7 +937,7 @@ def register_callbacks(app):
         is_open,
         source_id,
         dest_id,
-        shipment_date,
+        transfer_date,
         selected_component,
         quantity,
         suggestions,
@@ -953,24 +992,24 @@ def register_callbacks(app):
 
         elif triggered_id == "confirm-transfer":
             if not all(
-                [source_id, dest_id, shipment_date, selected_component, quantity]
+                [source_id, dest_id, transfer_date, selected_component, quantity]
             ):
                 message = html.Div("Please fill in all fields", className="text-danger")
                 return True, component_selector, quantity_input, message
 
-            # Create shipment record
-            success = create_shipment(
-                warehouse_id=source_id,
-                destination_id=dest_id,
-                component_id=selected_component,  # Make sure create_shipment accepts component_id
+            # Create transfer record using correct function
+            success = create_warehouse_transfer(
+                source_id=source_id,
+                dest_id=dest_id,
+                component_id=selected_component,
                 quantity=quantity,
-                shipment_date=shipment_date,
+                transfer_date=transfer_date,
             )
 
             if success:
                 return False, component_selector, quantity_input, message
             else:
-                message = html.Div("Error scheduling shipment", className="text-danger")
+                message = html.Div("Error scheduling transfer", className="text-danger")
                 return True, component_selector, quantity_input, message
 
         return is_open, component_selector, quantity_input, message
