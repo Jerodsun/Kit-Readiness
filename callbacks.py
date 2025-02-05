@@ -42,8 +42,6 @@ def register_callbacks(app):
             return (
                 html.Div(
                     [
-                        html.Br(),
-                        html.Br(),
                         dbc.Card(
                             [
                                 dbc.CardBody(
@@ -206,7 +204,6 @@ def register_callbacks(app):
             return (
                 html.Div(
                     [
-                        html.Br(),
                         overview_stats,
                         html.Br(),
                         dbc.Card(
@@ -226,7 +223,6 @@ def register_callbacks(app):
             return (
                 html.Div(
                     [
-                        html.Br(),
                         html.H3("Warehouse Inventory Management", className="mb-4"),
                         html.P("Select a warehouse to view and manage its inventory."),
                     ]
@@ -238,7 +234,6 @@ def register_callbacks(app):
             return (
                 html.Div(
                     [
-                        html.Br(),
                         html.H3("Kit Calculator", className="mb-4"),
                         html.P(
                             "Calculate possible kit completions based on current inventory."
