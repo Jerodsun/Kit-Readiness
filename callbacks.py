@@ -118,6 +118,7 @@ def register_callbacks(app):
             return (
                 html.Div(
                     [
+                        html.Br(),
                         html.H3("Warehouse Inventory Management", className="mb-4"),
                         html.P("Select a warehouse to view and manage its inventory."),
                     ]
