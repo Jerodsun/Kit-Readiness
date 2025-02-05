@@ -1,12 +1,20 @@
 import dash_bootstrap_components as dbc
 from dash import html, dcc
 import plotly.express as px
+from database.connector import get_all_warehouses
 
 
 def create_layout():
-    # Create a map
+    # Get warehouse data
+    warehouses = get_all_warehouses()
+
+    # Create map
     fig = px.scatter_mapbox(
-        lat=[37.0902], lon=[-95.7129], zoom=3, mapbox_style="carto-positron"
+        lat=[w["latitude"] for w in warehouses],
+        lon=[w["longitude"] for w in warehouses],
+        hover_name=[w["warehouse_name"] for w in warehouses],
+        zoom=3,
+        mapbox_style="carto-positron",
     )
 
     fig.update_layout(
@@ -41,6 +49,28 @@ def create_layout():
                                 active_tab="home",
                             ),
                             html.Div(id="dashboard-content"),
+                            # Add inventory management container to initial layout
+                            html.Div(
+                                [
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                [
+                                                    html.Label("Select Warehouse:"),
+                                                    dcc.Dropdown(
+                                                        id="warehouse-selector",
+                                                        className="mb-4",
+                                                    ),
+                                                ],
+                                                width=6,
+                                            ),
+                                        ]
+                                    ),
+                                    html.Div(id="inventory-table-container"),
+                                ],
+                                id="inventory-management",
+                                style={"display": "none"},
+                            ),  # Hidden by default
                         ],
                         className="left-column",
                     ),
