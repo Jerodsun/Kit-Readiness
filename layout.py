@@ -47,7 +47,10 @@ def create_layout():
                                         label="Warehouse Inventory",
                                         tab_id="warehouse-inventory",
                                     ),
-                                    dbc.Tab(label="Tab 3", tab_id="tab-3"),
+                                    dbc.Tab(
+                                        label="Kit Calculator",
+                                        tab_id="kit-calculator",
+                                    ),
                                 ],
                                 id="tabs",
                                 active_tab="home",
@@ -75,6 +78,19 @@ def create_layout():
                                 id="inventory-management",
                                 style={"display": "none"},
                             ),  # Hidden by default
+                            # Add kit calculator containers
+                            html.Div(id="kit-calculation-results"),
+                            html.Div(id="kit-components-detail"),
+                            # html.Div(
+                            #     [
+                            #         dcc.Dropdown(
+                            #             id="kit-calculator-warehouse",
+                            #             className="mb-4"
+                            #         ),
+                            #     ],
+                            #     id="kit-calculator-warehouse-selector",
+                            #     style={"display": "none"},
+                            # ),
                         ],
                         className="left-column",
                     ),

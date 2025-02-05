@@ -1,9 +1,11 @@
-from dash import Input, Output, html, dash_table, State, callback
+from dash import Input, Output, html, dash_table, State, callback, dcc
 import dash_bootstrap_components as dbc
 from database.connector import (
     get_all_warehouses,
     get_warehouse_inventory,
     get_warehouse_health_metrics,
+    calculate_possible_kits,
+    get_kit_components,
 )
 from dash.exceptions import PreventUpdate
 import logging
@@ -232,8 +234,42 @@ def register_callbacks(app):
                 inventory_style,
             )
 
-        elif active_tab == "tab-3":
-            return html.Div("Dashboard content for Tab 3"), inventory_style
+        elif active_tab == "kit-calculator":
+            return (
+                html.Div(
+                    [
+                        html.Br(),
+                        html.H3("Kit Calculator", className="mb-4"),
+                        html.P(
+                            "Calculate possible kit completions based on current inventory."
+                        ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        html.Label("Select Warehouse:"),
+                                        dcc.Dropdown(
+                                            id="kit-calculator-warehouse",
+                                            options=[
+                                                {
+                                                    "label": w["warehouse_name"],
+                                                    "value": w["warehouse_id"],
+                                                }
+                                                for w in get_all_warehouses()
+                                            ],
+                                            className="mb-4",
+                                        ),
+                                    ],
+                                    width=6,
+                                ),
+                            ]
+                        ),
+                        html.Div(id="kit-calculation-results"),
+                        html.Div(id="kit-components-detail"),
+                    ]
+                ),
+                inventory_style,
+            )
 
         return html.Div("Select a tab to see dashboard content"), inventory_style
 
@@ -315,4 +351,66 @@ def register_callbacks(app):
                     "color": "#2e7d32",
                 },
             ],
+        )
+
+    @app.callback(
+        [
+            Output("kit-calculation-results", "children"),
+            Output("kit-components-detail", "children"),
+        ],
+        [Input("kit-calculator-warehouse", "value")],
+    )
+    def update_kit_calculations(warehouse_id):
+        if not warehouse_id:
+            return html.Div("Please select a warehouse."), None
+
+        # Get possible kits calculation
+        possible_kits = calculate_possible_kits(warehouse_id)
+        kit_components = get_kit_components()
+
+        # Create results table
+        results_table = dash_table.DataTable(
+            data=[dict(row) for row in possible_kits],
+            columns=[
+                {"name": "Kit Name", "id": "kit_name"},
+                {"name": "Possible Completions", "id": "possible_kits"},
+            ],
+            style_table={"overflowX": "auto"},
+            style_cell={"textAlign": "left", "padding": "10px"},
+            style_header={
+                "backgroundColor": "rgb(230, 230, 230)",
+                "fontWeight": "bold",
+            },
+        )
+
+        # Create components breakdown table
+        components_table = dash_table.DataTable(
+            data=[dict(row) for row in kit_components],
+            columns=[
+                {"name": "Kit", "id": "kit_name"},
+                {"name": "Component", "id": "component_name"},
+                {"name": "Required Quantity", "id": "required_quantity"},
+            ],
+            style_table={"overflowX": "auto"},
+            style_cell={"textAlign": "left", "padding": "10px"},
+            style_header={
+                "backgroundColor": "rgb(230, 230, 230)",
+                "fontWeight": "bold",
+            },
+        )
+
+        return (
+            dbc.Card(
+                [
+                    dbc.CardHeader("Possible Kit Completions"),
+                    dbc.CardBody(results_table),
+                ]
+            ),
+            dbc.Card(
+                [
+                    dbc.CardHeader("Kit Component Requirements"),
+                    dbc.CardBody(components_table),
+                ],
+                className="mt-4",
+            ),
         )
