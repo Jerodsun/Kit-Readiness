@@ -8,6 +8,8 @@ from database.connector import (
     get_kit_components,
     calculate_rebalance_suggestions,
     update_warehouse_inventory,
+    create_shipment,
+    get_scheduled_shipments,
 )
 from dash.exceptions import PreventUpdate
 import plotly.express as px
@@ -294,6 +296,44 @@ def register_callbacks(app):
                 rebalance_style,
             )
 
+        elif active_tab == "scheduled-shipments":
+            shipments = get_scheduled_shipments()
+
+            shipments_table = dash_table.DataTable(
+                data=[dict(row) for row in shipments],
+                columns=[
+                    {"name": "Shipment Date", "id": "shipment_date"},
+                    {"name": "Source", "id": "source_warehouse"},
+                    {"name": "Destination", "id": "destination_name"},
+                    {"name": "Component", "id": "component_name"},
+                    {"name": "Quantity", "id": "quantity"},
+                ],
+                style_table={"overflowX": "auto"},
+                style_cell={"textAlign": "left", "padding": "10px"},
+                style_header={
+                    "backgroundColor": "rgb(230, 230, 230)",
+                    "fontWeight": "bold",
+                },
+                sort_action="native",
+                sort_mode="multi",
+            )
+
+            return (
+                html.Div(
+                    [
+                        html.H3("Scheduled Shipments", className="mb-4"),
+                        dbc.Card(
+                            [
+                                dbc.CardHeader("All Shipments"),
+                                dbc.CardBody(shipments_table),
+                            ]
+                        ),
+                    ]
+                ),
+                inventory_style,
+                rebalance_style,
+            )
+
         return (
             html.Div("Select a tab to see dashboard content"),
             inventory_style,
@@ -374,7 +414,10 @@ def register_callbacks(app):
         raise PreventUpdate
 
     @app.callback(
-        Output("rebalance-suggestions", "children"),
+        [
+            Output("rebalance-suggestions", "children"),
+            Output("suggestions-store", "data"),  # Add output for store
+        ],
         [
             Input("source-warehouse", "value"),
             Input("destination-warehouse", "value"),
@@ -384,10 +427,13 @@ def register_callbacks(app):
     )
     def update_rebalance_suggestions(source_id, dest_id, min_transfers, max_transfers):
         if not source_id or not dest_id or source_id == dest_id:
-            return html.Div(
-                "Select different source and destination warehouses to view suggestions.",
-                className="text-muted",
-            )
+            return (
+                html.Div(
+                    "Select different source and destination warehouses to view suggestions.",
+                    className="text-muted",
+                ),
+                [],
+            )  # Return empty list for store
 
         try:
             # Use safe default values if not provided
@@ -399,9 +445,12 @@ def register_callbacks(app):
             )
 
             if not results["suggestions"]:
-                return html.Div(
-                    "No viable transfers found with current parameters.",
-                    className="text-warning",
+                return (
+                    html.Div(
+                        "No viable transfers found with current parameters.",
+                        className="text-warning",
+                    ),
+                    [],
                 )
 
             suggestions_table = dash_table.DataTable(
@@ -454,37 +503,44 @@ def register_callbacks(app):
                 ]
             )
 
-            return html.Div(
-                [
-                    metrics_cards,
-                    html.Br(),
-                    dbc.Card(
-                        [
-                            dbc.CardHeader("Suggested Transfers"),
-                            dbc.CardBody(
-                                [
-                                    suggestions_table,
-                                    html.Div(
-                                        dbc.Button(
-                                            "Schedule Transfers",
-                                            id="schedule-transfers",
-                                            color="primary",
-                                            className="mt-3",
+            return (
+                html.Div(
+                    [
+                        metrics_cards,
+                        html.Br(),
+                        dbc.Card(
+                            [
+                                dbc.CardHeader("Suggested Transfers"),
+                                dbc.CardBody(
+                                    [
+                                        suggestions_table,
+                                        html.Div(
+                                            dbc.Button(
+                                                "Schedule Transfer",
+                                                id="schedule-transfers",
+                                                color="primary",
+                                                className="mt-3",
+                                                n_clicks=0,  # Initialize with 0 clicks
+                                            ),
+                                            className="text-end",
                                         ),
-                                        className="text-end",
-                                    ),
-                                ]
-                            ),
-                        ]
-                    ),
-                ]
+                                    ]
+                                ),
+                            ]
+                        ),
+                    ]
+                ),
+                results["suggestions"],
             )
 
         except Exception as e:
             logger.error(f"Error generating rebalance suggestions: {e}")
-            return html.Div(
-                "Error generating suggestions. Please try again.",
-                className="text-danger",
+            return (
+                html.Div(
+                    "Error generating suggestions. Please try again.",
+                    className="text-danger",
+                ),
+                [],
             )
 
     @app.callback(
@@ -712,6 +768,7 @@ def register_callbacks(app):
             showlegend=False,
             paper_bgcolor="white",
             plot_bgcolor="white",
+            title="Map",
         )
 
         # Handle rebalancing warehouse connections
@@ -795,3 +852,109 @@ def register_callbacks(app):
                 )
 
         return fig
+
+    @app.callback(
+        [
+            Output("transfer-modal", "is_open"),
+            Output("transfer-kit-selector", "children"),
+            Output("transfer-quantity-input", "children"),
+            Output("transfer-message", "children"),
+        ],
+        [
+            Input("schedule-transfers", "n_clicks"),
+            Input("cancel-transfer", "n_clicks"),
+            Input("confirm-transfer", "n_clicks"),
+        ],
+        [
+            State("transfer-modal", "is_open"),
+            State("source-warehouse", "value"),
+            State("destination-warehouse", "value"),
+            State("shipment-date", "date"),
+            State("transfer-component-selector", "value"),
+            State("transfer-quantity", "value"),
+            State("suggestions-store", "data"),
+        ],
+    )
+    def handle_transfer_modal(
+        schedule_n,
+        cancel_n,
+        confirm_n,
+        is_open,
+        source_id,
+        dest_id,
+        shipment_date,
+        selected_component,
+        quantity,
+        suggestions,
+    ):
+        triggered_id = ctx.triggered_id if ctx.triggered_id else None
+
+        # Create component selector using suggestions from store
+        component_selector = dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        html.Label("Select Component to Transfer:"),
+                        dcc.Dropdown(
+                            id="transfer-component-selector",
+                            options=[
+                                {
+                                    "label": row["component"],
+                                    "value": row["component_id"],
+                                }
+                                for row in (suggestions or [])
+                            ],
+                            className="mb-3",
+                        ),
+                    ]
+                )
+            ]
+        )
+
+        quantity_input = dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        html.Label("Transfer Quantity:"),
+                        dbc.Input(
+                            type="number",
+                            id="transfer-quantity",
+                            min=1,
+                            className="mb-3",
+                        ),
+                    ]
+                )
+            ]
+        )
+
+        message = ""
+
+        if triggered_id == "schedule-transfers" and schedule_n:
+            return True, component_selector, quantity_input, message
+
+        elif triggered_id == "cancel-transfer":
+            return False, component_selector, quantity_input, message
+
+        elif triggered_id == "confirm-transfer":
+            if not all(
+                [source_id, dest_id, shipment_date, selected_component, quantity]
+            ):
+                message = html.Div("Please fill in all fields", className="text-danger")
+                return True, component_selector, quantity_input, message
+
+            # Create shipment record
+            success = create_shipment(
+                warehouse_id=source_id,
+                destination_id=dest_id,
+                component_id=selected_component,  # Make sure create_shipment accepts component_id
+                quantity=quantity,
+                shipment_date=shipment_date,
+            )
+
+            if success:
+                return False, component_selector, quantity_input, message
+            else:
+                message = html.Div("Error scheduling shipment", className="text-danger")
+                return True, component_selector, quantity_input, message
+
+        return is_open, component_selector, quantity_input, message

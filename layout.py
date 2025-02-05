@@ -2,6 +2,7 @@ import dash_bootstrap_components as dbc
 from dash import html, dcc, dash_table
 import plotly.express as px
 from database.connector import get_all_warehouses
+from datetime import date
 
 
 def create_layout():
@@ -70,6 +71,10 @@ def create_layout():
                                     dbc.Tab(
                                         label="Rebalance Warehouses",
                                         tab_id="rebalance-warehouses",
+                                    ),
+                                    dbc.Tab(
+                                        label="Scheduled Shipments",
+                                        tab_id="scheduled-shipments",
                                     ),
                                 ],
                                 id="tabs",
@@ -232,6 +237,80 @@ def create_layout():
                                     ),
                                     html.Div(id="rebalance-suggestions"),
                                     html.Div(id="transfer-form"),
+                                    # Add Store for suggestions data
+                                    dcc.Store(id="suggestions-store"),
+                                    # Add blank hidden components to satisfy callback requirements
+                                    html.Div(
+                                        dcc.Dropdown(id="transfer-component-selector"),
+                                        style={"display": "none"},
+                                    ),
+                                    html.Div(
+                                        dbc.Input(
+                                            id="transfer-quantity", type="number"
+                                        ),
+                                        style={"display": "none"},
+                                    ),
+                                    html.Div(
+                                        dbc.Button(id="schedule-transfers", n_clicks=0),
+                                        style={"display": "none"},
+                                    ),
+                                    # Add transfer modal
+                                    dbc.Modal(
+                                        [
+                                            dbc.ModalHeader("Schedule Transfer"),
+                                            dbc.ModalBody(
+                                                [
+                                                    dbc.Form(
+                                                        [
+                                                            dbc.Row(
+                                                                [
+                                                                    dbc.Col(
+                                                                        [
+                                                                            html.Label(
+                                                                                "Shipment Date:"
+                                                                            ),
+                                                                            dcc.DatePickerSingle(
+                                                                                id="shipment-date",
+                                                                                min_date_allowed=date.today(),
+                                                                                date=date.today(),
+                                                                                className="mb-3",
+                                                                            ),
+                                                                        ]
+                                                                    )
+                                                                ]
+                                                            ),
+                                                            html.Div(
+                                                                id="transfer-kit-selector"
+                                                            ),
+                                                            html.Div(
+                                                                id="transfer-quantity-input"
+                                                            ),
+                                                            html.Div(
+                                                                id="transfer-message",
+                                                                className="mt-3",
+                                                            ),
+                                                        ]
+                                                    )
+                                                ]
+                                            ),
+                                            dbc.ModalFooter(
+                                                [
+                                                    dbc.Button(
+                                                        "Cancel",
+                                                        id="cancel-transfer",
+                                                        className="me-2",
+                                                    ),
+                                                    dbc.Button(
+                                                        "Confirm Transfer",
+                                                        id="confirm-transfer",
+                                                        color="primary",
+                                                    ),
+                                                ]
+                                            ),
+                                        ],
+                                        id="transfer-modal",
+                                        is_open=False,
+                                    ),
                                 ],
                                 id="rebalance-container",
                                 style={"display": "none"},
