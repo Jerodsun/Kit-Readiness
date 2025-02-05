@@ -9,6 +9,7 @@ from database.connector import (
     calculate_rebalance_suggestions,
 )
 from dash.exceptions import PreventUpdate
+import plotly.express as px
 import logging
 
 # Get logger
@@ -617,3 +618,114 @@ def register_callbacks(app):
         if not source_id or not dest_id:
             raise PreventUpdate
         return dest_id, source_id
+
+    @app.callback(
+        Output("map-content", "figure"),
+        [
+            Input("source-warehouse", "value"),
+            Input("destination-warehouse", "value"),
+            Input("warehouse-selector", "value")
+        ]
+    )
+    def update_map_with_selections(source_id, dest_id, inventory_id):
+        warehouses = get_all_warehouses()
+        
+        # Create base map
+        fig = px.scatter_mapbox(
+            lat=[w["latitude"] for w in warehouses],
+            lon=[w["longitude"] for w in warehouses],
+            hover_name=[w["warehouse_name"] for w in warehouses],
+            zoom=3,
+            mapbox_style="carto-positron",
+        )
+
+        fig.update_layout(
+            mapbox=dict(
+                bearing=0,
+                pitch=0,
+            ),
+            margin={"r": 0, "t": 0, "l": 0, "b": 0},
+            showlegend=False,
+            paper_bgcolor="white",
+            plot_bgcolor="white",
+        )
+
+        # Handle rebalancing warehouse connections
+        if source_id and dest_id:
+            source = next((w for w in warehouses if w["warehouse_id"] == source_id), None)
+            dest = next((w for w in warehouses if w["warehouse_id"] == dest_id), None)
+            
+            if source and dest:
+                # Add connection line
+                fig.add_trace(
+                    dict(
+                        type="scattermapbox",
+                        lon=[source["longitude"], dest["longitude"]],
+                        lat=[source["latitude"], dest["latitude"]],
+                        mode="lines",
+                        line=dict(
+                            width=2,
+                            color="#3072b4",
+                        ),
+                        hoverinfo="skip"
+                    )
+                )
+                
+                # Add source and destination markers
+                fig.add_trace(
+                    dict(
+                        type="scattermapbox",
+                        lon=[source["longitude"]],
+                        lat=[source["latitude"]],
+                        mode="markers",
+                        marker=dict(size=12, color="#e74c3c"),
+                        name="Source",
+                        hovertext=f"Source: {source['warehouse_name']}"
+                    )
+                )
+                
+                fig.add_trace(
+                    dict(
+                        type="scattermapbox",
+                        lon=[dest["longitude"]],
+                        lat=[dest["latitude"]],
+                        mode="markers",
+                        marker=dict(size=12, color="#27ae60"),
+                        name="Destination",
+                        hovertext=f"Destination: {dest['warehouse_name']}"
+                    )
+                )
+
+        # Handle inventory warehouse selection
+        if inventory_id:
+            selected = next((w for w in warehouses if w["warehouse_id"] == inventory_id), None)
+            if selected:
+                # Add circle around selected warehouse
+                fig.add_trace(
+                    dict(
+                        type="scattermapbox",
+                        lon=[selected["longitude"]],
+                        lat=[selected["latitude"]],
+                        mode="markers",
+                        marker=dict(
+                            size=25,
+                            color="rgba(48, 114, 180, 0.3)",
+                            symbol="circle"
+                        ),
+                        hoverinfo="skip"
+                    )
+                )
+                # Add center point
+                fig.add_trace(
+                    dict(
+                        type="scattermapbox",
+                        lon=[selected["longitude"]],
+                        lat=[selected["latitude"]],
+                        mode="markers",
+                        marker=dict(size=8, color="#3072b4"),
+                        name="Selected Warehouse",
+                        hovertext=f"Selected: {selected['warehouse_name']}"
+                    )
+                )
+
+        return fig
