@@ -43,10 +43,9 @@ def create_layout():
                         ),
                         href="/assets/documentation.pdf",
                         target="_blank",
-                        style={"position": "absolute", "right": "20px", "top": "20px"},
                     ),
                 ],
-                style={"position": "relative", "width": "100%", "marginBottom": "20px"},
+                className="header",
             ),
             html.Div(
                 [
