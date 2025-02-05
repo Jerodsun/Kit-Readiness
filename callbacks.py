@@ -299,6 +299,31 @@ def register_callbacks(app):
         raise PreventUpdate
 
     @app.callback(
+        [
+            Output("kit-calculator-warehouse", "options"),
+            Output("kit-calculator-warehouse", "value"),
+        ],
+        Input("tabs", "active_tab"),
+    )
+    def populate_kit_calculator_dropdown(active_tab):
+        if active_tab == "kit-calculator":
+            try:
+                warehouses = get_all_warehouses()
+                if not warehouses:
+                    raise ValueError("No warehouses found")
+                options = [
+                    {"label": w["warehouse_name"], "value": w["warehouse_id"]}
+                    for w in warehouses
+                ]
+                # Set default value to first warehouse's ID if available
+                default_value = warehouses[0]["warehouse_id"] if warehouses else None
+                return options, default_value
+            except Exception as e:
+                logger.error(f"Error fetching warehouses: {e}")
+                return [], None
+        raise PreventUpdate
+
+    @app.callback(
         Output("inventory-table-container", "children"),
         [Input("warehouse-selector", "value")],
     )
