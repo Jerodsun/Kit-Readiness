@@ -3,32 +3,43 @@ from dash import html, dcc
 import plotly.express as px
 
 def create_layout():
-    # Create a map centered around the United States
+    # Create a map
     fig = px.scatter_mapbox(
         lat=[37.0902], lon=[-95.7129], zoom=3,
         mapbox_style="carto-positron"
     )
+    
+    fig.update_layout(
+        mapbox=dict(
+            bearing=0,
+            pitch=0,
+        ),
+        margin={"r":0,"t":0,"l":0,"b":0},
+        showlegend=False,
+        paper_bgcolor='white',
+        plot_bgcolor='white',
+    )
 
-    return dbc.Container([
-        dbc.Row([
-            dbc.Col(html.H1("Readiness Dashboard"), width=12)
-        ]),
-        dbc.Row([
-            dbc.Col(
+    return html.Div([
+        html.H1("Readiness Dashboard", className="header"),
+        html.Div([
+            # Left column
+            html.Div([
                 dbc.Tabs([
                     dbc.Tab(label='Tab 1', tab_id='tab-1'),
                     dbc.Tab(label='Tab 2', tab_id='tab-2'),
                     dbc.Tab(label='Tab 3', tab_id='tab-3'),
                 ], id='tabs', active_tab='tab-1'),
-                width=4
-            ),
-            dbc.Col(
-                dcc.Graph(figure=fig),
-                width=8
-            )
-        ]),
-        dbc.Row([
-            dbc.Col(html.Div(id='dashboard-content'), width=12)
-        ]),
-        # Add more rows and columns for other features
-    ], fluid=True)
+                html.Div(id='dashboard-content')
+            ], className='left-column'),
+            
+            # Right column (map)
+            html.Div([
+                dcc.Graph(
+                    figure=fig,
+                    id='map-content',
+                    className='map-content'
+                )
+            ], className='right-column'),
+        ], className='main-content')
+    ])
