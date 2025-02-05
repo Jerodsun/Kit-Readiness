@@ -328,9 +328,6 @@ def register_callbacks(app):
         [Input("warehouse-selector", "value")],
     )
     def update_inventory_table(warehouse_id):
-        if not warehouse_id:
-            return html.Div("Please select a warehouse to view inventory.")
-
         inventory = get_warehouse_inventory(warehouse_id)
         if not inventory:
             return html.Div("No inventory data available for this warehouse.")
@@ -388,15 +385,6 @@ def register_callbacks(app):
         [Input("kit-calculator-warehouse", "value")],
     )
     def update_kit_calculations(warehouse_id):
-        if not warehouse_id:
-            return (
-                html.Div("Please select a warehouse."),
-                None,
-                {"display": "none"},
-                {"display": "none"},
-            )
-
-        # Get possible kits calculation
         possible_kits = calculate_possible_kits(warehouse_id)
         kit_components = get_kit_components()
 
