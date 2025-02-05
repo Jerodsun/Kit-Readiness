@@ -598,3 +598,22 @@ def register_callbacks(app):
             {"display": "block"},
             {"display": "block"},
         )
+
+    @app.callback(
+        [
+            Output("source-warehouse", "value"),
+            Output("destination-warehouse", "value")
+        ],
+        [
+            Input("swap-warehouses-button", "n_clicks")
+        ],
+        [
+            State("source-warehouse", "value"),
+            State("destination-warehouse", "value")
+        ],
+        prevent_initial_call=True
+    )
+    def swap_warehouses(n_clicks, source_id, dest_id):
+        if not source_id or not dest_id:
+            raise PreventUpdate
+        return dest_id, source_id

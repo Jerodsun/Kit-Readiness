@@ -123,7 +123,19 @@ def create_layout():
                                                         className="mb-4",
                                                     ),
                                                 ],
-                                                width=6,
+                                                width=5,
+                                            ),
+                                            dbc.Col(
+                                                dbc.Button(
+                                                    "⇄",
+                                                    id="swap-warehouses-button",
+                                                    color="primary",
+                                                    className="mb-4",
+                                                    style={"width": "50px"},
+                                                ),
+                                                width=2,
+                                                className="d-flex align-items-end justify-content-center",
+                                                style={"width": "80px"},
                                             ),
                                             dbc.Col(
                                                 [
@@ -135,9 +147,10 @@ def create_layout():
                                                         className="mb-4",
                                                     ),
                                                 ],
-                                                width=6,
+                                                width=5,
                                             ),
-                                        ]
+                                        ],
+                                        className="d-flex align-items-end justify-content-center",
                                     ),
                                     dbc.Row(
                                         [
@@ -154,7 +167,7 @@ def create_layout():
                                                         className="form-control mb-4",
                                                     ),
                                                 ],
-                                                width=6,
+                                                width=2,
                                             ),
                                             dbc.Col(
                                                 [
@@ -169,9 +182,10 @@ def create_layout():
                                                         className="form-control mb-4",
                                                     ),
                                                 ],
-                                                width=6,
+                                                width=2,
                                             ),
-                                        ]
+                                        ],
+                                        className="d-flex align-items-end justify-content-center",
                                     ),
                                     html.Div(id="rebalance-suggestions"),
                                     html.Div(id="transfer-form"),
