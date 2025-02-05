@@ -201,29 +201,4 @@ VALUES
     ('Aguascalientes', 21.8853, -102.2916),
     ('Acapulco', 16.8531, -99.8237);
 
--- Sample Shipments
-INSERT INTO
-    shipments (
-        shipment_date,
-        warehouse_id,
-        destination_id,
-        component_id,
-        quantity
-    )
-VALUES
-    ('2023-01-15', 1, 1, 1, 5), -- NY to Mexico City: 5 Hammers
-    ('2023-01-20', 2, 2, 2, 10) -- , -- LA to Guadalajara: 10 Screwdriver Sets
-    -- ('2023-01-25', 3, 3, 3, 15), -- Chicago to Monterrey: 15 Wrench Sets
-    -- ('2023-02-01', 4, 4, 4, 8), -- Houston to Cancun: 8 Flashlights
-    -- ('2023-02-05', 5, 5, 5, 12), -- Denver to Tijuana: 12 Batteries
-    -- ('2023-02-10', 6, 6, 6, 20), -- Seattle to Puebla: 20 Bandages
-    -- ('2023-02-15', 7, 7, 7, 10), -- Phoenix to Merida: 10 Antiseptic Wipes
-    -- ('2023-02-20', 8, 8, 8, 14), -- Kansas City to Toluca: 14 Gauze Rolls
-    -- ('2023-02-25', 9, 9, 1, 18), -- Boston to Leon: 18 Hammers
-    -- ('2023-03-01', 10, 10, 2, 12), -- Miami to San Luis Potosi: 12 Screwdriver Sets
-    -- ('2023-03-05', 11, 11, 3, 16), -- Cleveland to Queretaro: 16 Wrench Sets
-    -- ('2023-03-10', 12, 12, 4, 22), -- Minneapolis to Chihuahua: 22 Flashlights
-    -- ('2023-03-15', 13, 13, 5, 9), -- Omaha to Morelia: 9 Batteries
-    -- ('2023-03-20', 14, 14, 6, 11), -- Plains to Aguascalientes: 11 Bandages
-    -- ('2023-03-25', 1, 15, 7, 13) -- NY to Acapulco: 13 Antiseptic Wipes
-;
+-- Todo Sample Shipments
