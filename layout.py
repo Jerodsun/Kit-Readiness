@@ -64,16 +64,6 @@ def create_layout():
                                                 ],
                                                 width=6,
                                             ),
-                                            dbc.Col(
-                                                [
-                                                    dbc.Button(
-                                                        "Add New Item",
-                                                        color="primary",
-                                                        className="float-end",
-                                                    ),
-                                                ],
-                                                width=6,
-                                            ),
                                         ]
                                     ),
                                     html.Div(id="inventory-table-container"),
