@@ -6,6 +6,7 @@ from database.connector import (
     get_warehouse_health_metrics,
     calculate_possible_kits,
     get_kit_components,
+    calculate_rebalance_suggestions,
 )
 from dash.exceptions import PreventUpdate
 import logging
@@ -31,19 +32,19 @@ def register_callbacks(app):
         [
             Output("dashboard-content", "children"),
             Output("inventory-management", "style"),
+            Output("rebalance-container", "style"),
         ],
         [Input("tabs", "active_tab")],
     )
     def update_dashboard(active_tab):
-        # Default style (hidden)
+        # Default styles (hidden)
         inventory_style = {"display": "none"}
+        rebalance_style = {"display": "none"}
 
         if active_tab == "home":
             return (
                 html.Div(
                     [
-                        html.Br(),
-                        html.Br(),
                         dbc.Card(
                             [
                                 dbc.CardBody(
@@ -128,6 +129,7 @@ def register_callbacks(app):
                     ]
                 ),
                 inventory_style,
+                rebalance_style,
             )
 
         elif active_tab == "warehouse-health":
@@ -206,7 +208,6 @@ def register_callbacks(app):
             return (
                 html.Div(
                     [
-                        html.Br(),
                         overview_stats,
                         html.Br(),
                         dbc.Card(
@@ -218,6 +219,7 @@ def register_callbacks(app):
                     ]
                 ),
                 inventory_style,
+                rebalance_style,
             )
 
         elif active_tab == "warehouse-inventory":
@@ -226,19 +228,18 @@ def register_callbacks(app):
             return (
                 html.Div(
                     [
-                        html.Br(),
                         html.H3("Warehouse Inventory Management", className="mb-4"),
                         html.P("Select a warehouse to view and manage its inventory."),
                     ]
                 ),
                 inventory_style,
+                rebalance_style,
             )
 
         elif active_tab == "kit-calculator":
             return (
                 html.Div(
                     [
-                        html.Br(),
                         html.H3("Kit Calculator", className="mb-4"),
                         html.P(
                             "Calculate possible kit completions based on current inventory."
@@ -269,9 +270,33 @@ def register_callbacks(app):
                     ]
                 ),
                 inventory_style,
+                rebalance_style,
             )
 
-        return html.Div("Select a tab to see dashboard content"), inventory_style
+        elif active_tab == "rebalance-warehouses":
+            rebalance_style = {"display": "block"}
+            return (
+                html.Div(
+                    [
+                        html.H3("Warehouse Rebalancing", className="mb-4"),
+                        html.P(
+                            """
+                            Optimize component distribution across warehouses to maximize
+                            kit completion potential. Select source and destination warehouses
+                            to view suggested transfers.
+                            """
+                        ),
+                    ]
+                ),
+                inventory_style,
+                rebalance_style,
+            )
+
+        return (
+            html.Div("Select a tab to see dashboard content"),
+            inventory_style,
+            rebalance_style,
+        )
 
     @app.callback(
         [
@@ -322,6 +347,143 @@ def register_callbacks(app):
                 logger.error(f"Error fetching warehouses: {e}")
                 return [], None
         raise PreventUpdate
+
+    @app.callback(
+        [
+            Output("source-warehouse", "options"),
+            Output("destination-warehouse", "options"),
+        ],
+        [Input("tabs", "active_tab")],
+    )
+    def populate_warehouse_dropdowns(active_tab):
+        if active_tab == "rebalance-warehouses":
+            try:
+                warehouses = get_all_warehouses()
+                if not warehouses:
+                    raise ValueError("No warehouses found")
+                options = [
+                    {"label": w["warehouse_name"], "value": w["warehouse_id"]}
+                    for w in warehouses
+                ]
+                return options, options
+            except Exception as e:
+                logger.error(f"Error fetching warehouses: {e}")
+                return [], []
+        raise PreventUpdate
+
+    @app.callback(
+        Output("rebalance-suggestions", "children"),
+        [
+            Input("source-warehouse", "value"),
+            Input("destination-warehouse", "value"),
+            Input("min-transfers", "value"),
+            Input("max-transfers", "value"),
+        ],
+    )
+    def update_rebalance_suggestions(source_id, dest_id, min_transfers, max_transfers):
+        if not source_id or not dest_id or source_id == dest_id:
+            return html.Div(
+                "Select different source and destination warehouses to view suggestions.",
+                className="text-muted",
+            )
+
+        try:
+            # Use safe default values if not provided
+            min_transfers = max(1, min_transfers or 1)
+            max_transfers = max(min_transfers, max_transfers or 100)
+
+            results = calculate_rebalance_suggestions(
+                source_id, dest_id, min_transfers, max_transfers
+            )
+
+            if not results["suggestions"]:
+                return html.Div(
+                    "No viable transfers found with current parameters.",
+                    className="text-warning",
+                )
+
+            suggestions_table = dash_table.DataTable(
+                data=results["suggestions"],
+                columns=[
+                    {"name": "Component", "id": "component"},
+                    {"name": "Transfer Quantity", "id": "quantity"},
+                    {"name": "Impact", "id": "impact"},
+                    {"name": "Source Remaining", "id": "source_remaining"},
+                    {"name": "Destination New Total", "id": "dest_new_total"},
+                ],
+                style_table={"overflowX": "auto"},
+                style_cell={"textAlign": "left", "padding": "10px"},
+                style_header={
+                    "backgroundColor": "var(--light)",
+                    "fontWeight": "bold",
+                },
+                style_data_conditional=[
+                    {
+                        "if": {"filter_query": '{impact} = "High"'},
+                        "backgroundColor": "rgba(39, 174, 96, 0.1)",
+                    },
+                    {
+                        "if": {"filter_query": '{impact} = "Medium"'},
+                        "backgroundColor": "rgba(243, 156, 18, 0.1)",
+                    },
+                    {
+                        "if": {"filter_query": '{impact} = "Low"'},
+                        "backgroundColor": "rgba(231, 76, 60, 0.1)",
+                    },
+                ],
+            )
+
+            metrics_cards = dbc.Row(
+                [
+                    dbc.Col(
+                        create_health_card(
+                            "Current Source Kits",
+                            results["current_metrics"]["source_kits"],
+                            "primary",
+                        )
+                    ),
+                    dbc.Col(
+                        create_health_card(
+                            "Current Destination Kits",
+                            results["current_metrics"]["dest_kits"],
+                            "primary",
+                        )
+                    ),
+                ]
+            )
+
+            return html.Div(
+                [
+                    metrics_cards,
+                    html.Br(),
+                    dbc.Card(
+                        [
+                            dbc.CardHeader("Suggested Transfers"),
+                            dbc.CardBody(
+                                [
+                                    suggestions_table,
+                                    html.Div(
+                                        dbc.Button(
+                                            "Schedule Transfers",
+                                            id="schedule-transfers",
+                                            color="primary",
+                                            className="mt-3",
+                                        ),
+                                        className="text-end",
+                                    ),
+                                ]
+                            ),
+                        ]
+                    ),
+                ]
+            )
+
+        except Exception as e:
+            logger.error(f"Error generating rebalance suggestions: {e}")
+            return html.Div(
+                "Error generating suggestions. Please try again.",
+                className="text-danger",
+            )
 
     @app.callback(
         Output("inventory-table-container", "children"),
