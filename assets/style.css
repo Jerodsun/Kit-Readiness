@@ -1,0 +1,70 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+
+h1,
+h2,
+h3 {
+    color: #343a40;
+}
+
+.header {
+    padding: 15px 25px;
+    background: linear-gradient(135deg, #3072b4 0%, #438560 100%);
+    color: white;
+    height: 60px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+}
+
+.header h1 {
+    color: rgb(78, 7, 7);
+    font-weight: 600;
+    font-size: 24px;
+    margin: 0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.main-content {
+    display: flex;
+    height: calc(100vh - 70px);
+}
+
+.left-column {
+    width: 60%;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.right-column {
+    width: 40%;
+    position: fixed;
+    right: 0;
+    top: 60px;
+    bottom: 0;
+}
+
+.map-content {
+    height: calc(100% - 20px) !important;
+    width: calc(100% - 20px) !important;
+    padding: 20px;
+}
+
+.container {
+    padding: 20px;
+}
+
+.card {
+    margin-bottom: 20px;
+}
