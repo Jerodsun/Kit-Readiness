@@ -60,9 +60,63 @@ VALUES
         'Chicago, IL',
         41.8781,
         -87.6298
-    );
-
--- Sample Warehouse Inventory
+    ),
+    (
+        'Southern Facility',
+        'Houston, TX',
+        29.7604,
+        -95.3698
+    ),
+    (
+        'Mountain Facility',
+        'Denver, CO',
+        39.7392,
+        -104.9903
+    ),
+    (
+        'Pacific Northwest Facility',
+        'Seattle, WA',
+        47.6062,
+        -122.3321
+    ),
+    (
+        'Southwest Facility',
+        'Phoenix, AZ',
+        33.4484,
+        -112.0740
+    ),
+    (
+        'Midwest Facility',
+        'Kansas City, MO',
+        39.0997,
+        -94.5786
+    ),
+    (
+        'Northeast Facility',
+        'Boston, MA',
+        42.3601,
+        -71.0589
+    ),
+    (
+        'Southeast Facility',
+        'Miami, FL',
+        25.7617,
+        -80.1918
+    ),
+    (
+        'Great Lakes Facility',
+        'Cleveland, OH',
+        41.4993,
+        -81.6944
+    ),
+    (
+        'Northern Facility',
+        'Minneapolis, MN',
+        44.9778,
+        -93.2650
+    ),
+    ('Plains Facility', 'Omaha, NE', 41.2565, -95.9345)
+    -- Sample Warehouse Inventory
 INSERT INTO
     warehouse_inventory (
         warehouse_id,

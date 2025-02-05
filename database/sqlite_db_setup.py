@@ -4,7 +4,7 @@ import os
 
 def init_database():
     # Create database directory if it doesn't exist
-    # os.makedirs('database', exist_ok=True)
+    os.makedirs('database', exist_ok=True)
 
     # Connect to SQLite database (creates it if it doesn't exist)
     conn = sqlite3.connect("database/kit_readiness.db")
