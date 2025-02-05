@@ -3,3 +3,4 @@ dash-bootstrap-components
 flask
 sqlalchemy
 plotly
+python-dotenv
