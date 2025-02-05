@@ -153,7 +153,12 @@ VALUES
     (11, 8, 85, 40, 200), -- Cleveland: 85 Gauze Rolls
     (12, 1, 65, 20, 100), -- Minneapolis: 65 Hammers
     (12, 2, 85, 30, 150), -- Minneapolis: 85 Screwdriver Sets
-    (13, 3, 55, 20, 100) -- Omaha: 55 Wrench Sets
+    (13, 3, 55, 20, 100), -- Omaha: 55 Wrench Sets
+    (13, 4, 110, 40, 200), -- Omaha: 110 Flashlights
+    (13, 5, 220, 100, 500), -- Omaha: 220 Batteries
+    (14, 6, 130, 50, 300), -- Plains: 130 Bandages
+    (14, 7, 260, 100, 500), -- Plains: 260 Antiseptic Wipes
+    (14, 8, 100, 40, 200) -- Plains: 100 Gauze Rolls
 ;
 
 -- Chicago: 80 Gauze Rolls
