@@ -1,5 +1,5 @@
 import dash_bootstrap_components as dbc
-from dash import html, dcc
+from dash import html, dcc, dash_table
 import plotly.express as px
 from database.connector import get_all_warehouses
 
@@ -32,7 +32,7 @@ def create_layout():
         [
             html.Div(
                 [
-                    html.H1("Readiness Dashboard", className="header"),
+                    html.H1("Inventory Readiness Dashboard", className="header"),
                     html.A(
                         dbc.Button(
                             "Help 📖",
@@ -93,7 +93,50 @@ def create_layout():
                                             ),
                                         ]
                                     ),
-                                    html.Div(id="inventory-table-container"),
+                                    html.Div(
+                                        dash_table.DataTable(
+                                            id="inventory-table",
+                                            columns=[
+                                                {
+                                                    "name": "Component",
+                                                    "id": "component_name",
+                                                    "editable": False,
+                                                },
+                                                {
+                                                    "name": "Description",
+                                                    "id": "description",
+                                                    "editable": False,
+                                                },
+                                                {
+                                                    "name": "Quantity",
+                                                    "id": "quantity",
+                                                    "editable": True,
+                                                    "type": "numeric",
+                                                },
+                                                {
+                                                    "name": "Minimum Healthy Stock",
+                                                    "id": "min_stock",
+                                                    "editable": False,
+                                                },
+                                                {
+                                                    "name": "Maximum Warehouse Capacity",
+                                                    "id": "max_stock",
+                                                    "editable": False,
+                                                },
+                                            ],
+                                            data=[],
+                                            style_table={"overflowX": "auto"},
+                                        ),
+                                        id="inventory-table-container",
+                                    ),
+                                    dbc.Button(
+                                        "Save Changes",
+                                        id="save-inventory",
+                                        color="primary",
+                                        className="mt-3",
+                                        style={"display": "none"},  # Hidden by default
+                                    ),
+                                    html.Div(id="save-status", className="mt-2"),
                                 ],
                                 id="inventory-management",
                                 style={"display": "none"},

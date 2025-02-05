@@ -281,3 +281,30 @@ def calculate_rebalance_suggestions(
                 "dest_kits": current_dest_kits,
             },
         }
+
+
+def update_warehouse_inventory(warehouse_id, updates):
+    """
+    Updates inventory quantities for a warehouse
+    updates: list of dicts with component_id and new quantity
+    """
+    logger.info(f"Updating inventory for warehouse {warehouse_id}")
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            for update in updates:
+                cursor.execute(
+                    """
+                    UPDATE warehouse_inventory
+                    SET quantity = ?
+                    WHERE warehouse_id = ? AND component_id = ?
+                    """,
+                    (update["quantity"], warehouse_id, update["component_id"]),
+                )
+            conn.commit()
+            logger.info(f"Successfully updated {len(updates)} inventory items")
+            return True
+        except Exception as e:
+            logger.error(f"Error updating inventory: {e}")
+            conn.rollback()
+            return False
