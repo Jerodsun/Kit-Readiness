@@ -26,10 +26,10 @@ def create_layout():
             # Left column
             html.Div([
                 dbc.Tabs([
-                    dbc.Tab(label='Tab 1', tab_id='tab-1'),
-                    dbc.Tab(label='Tab 2', tab_id='tab-2'),
+                    dbc.Tab(label='Home', tab_id='home'),
+                    dbc.Tab(label='Warehouse Inventory', tab_id='warehouse-inventory'),
                     dbc.Tab(label='Tab 3', tab_id='tab-3'),
-                ], id='tabs', active_tab='tab-1'),
+                ], id='tabs', active_tab='home'),
                 html.Div(id='dashboard-content')
             ], className='left-column'),
             
