@@ -1,24 +1,10 @@
 import sqlite3
 import logging
-import os
 from contextlib import contextmanager
 
 DATABASE_PATH = "database/kit_readiness.db"
 
-# Configure logging based on env
-DEBUG = os.getenv("DEBUG", "False").lower() == "true"
-
-if DEBUG:
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
-else:
-    logging.basicConfig(
-        level=logging.ERROR, format="%(levelname)s: %(message)s"  # Only show errors
-    )
-    logging.getLogger().disabled = True  # Disable all logging
-
+# Get logger
 logger = logging.getLogger(__name__)
 
 
