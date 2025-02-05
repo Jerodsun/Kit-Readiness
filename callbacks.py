@@ -268,16 +268,42 @@ def register_callbacks(app):
         return dash_table.DataTable(
             data=[dict(row) for row in inventory],
             columns=[
-                {"name": "Component", "id": "component_name"},
-                {"name": "Description", "id": "description"},
-                {"name": "Quantity", "id": "quantity"},
-                {"name": "Min Stock", "id": "min_stock"},
-                {"name": "Max Stock", "id": "max_stock"},
+            {"name": "Component", "id": "component_name"},
+            {"name": "Description", "id": "description"},
+            {"name": "Quantity", "id": "quantity"},
+            {"name": "Minimum Healthy Stock", "id": "min_stock"},
+            {"name": "Maximum Warehouse Capacity", "id": "max_stock"},
             ],
             style_table={"overflowX": "auto"},
             style_cell={"textAlign": "left", "padding": "10px"},
             style_header={
-                "backgroundColor": "rgb(230, 230, 230)",
-                "fontWeight": "bold",
+            "backgroundColor": "rgb(230, 230, 230)",
+            "fontWeight": "bold",
             },
+            style_data_conditional=[
+            {
+                "if": {
+                "filter_query": "{quantity} < {min_stock}",
+                "column_id": "quantity",
+                },
+                "backgroundColor": "#ffebee",
+                "color": "#c62828",
+            },
+            {
+                "if": {
+                "filter_query": "{quantity} >= {min_stock} && {quantity} < {max_stock}",
+                "column_id": "quantity",
+                },
+                "backgroundColor": "#fff3e0",
+                "color": "#ef6c00",
+            },
+            {
+                "if": {
+                "filter_query": "{quantity} >= {max_stock}",
+                "column_id": "quantity",
+                },
+                "backgroundColor": "#e8f5e9",
+                "color": "#2e7d32",
+            },
+            ],
         )
