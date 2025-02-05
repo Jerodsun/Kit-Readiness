@@ -5,4 +5,3 @@ sqlalchemy
 plotly
 python-dotenv
 logging
-sqlite3
