@@ -312,7 +312,7 @@ def register_callbacks(app):
             transfers_table = dash_table.DataTable(
                 data=[dict(row) for row in transfers],
                 columns=[
-                    {"name": "Transfer Date", "id": "shipment_date"},
+                    {"name": "Transfer Date", "id": "transfer_date"},  # Changed from shipment_date
                     {"name": "From", "id": "source_warehouse"},
                     {"name": "To", "id": "destination_warehouse"},
                     {"name": "Component", "id": "component_name"},

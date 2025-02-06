@@ -201,4 +201,44 @@ VALUES
     ('Aguascalientes', 21.8853, -102.2916),
     ('Acapulco', 16.8531, -99.8237);
 
--- Todo Sample Shipments
+-- Sample Warehouse Transfers
+INSERT INTO
+    warehouse_transfers (
+        transfer_date,
+        source_warehouse_id,
+        destination_warehouse_id,
+        component_id,
+        quantity
+    )
+VALUES
+    ('2024-02-01', 1, 2, 1, 25), -- NY to LA: 25 Hammers
+    ('2024-02-02', 2, 3, 4, 30), -- LA to Chicago: 30 Flashlights
+    ('2024-02-03', 3, 4, 6, 40), -- Chicago to Houston: 40 Bandages
+    ('2024-02-04', 5, 6, 5, 50), -- Denver to Seattle: 50 Batteries
+    ('2024-02-05', 7, 8, 7, 35), -- Phoenix to KC: 35 Antiseptic Wipes
+    ('2024-02-06', 9, 10, 3, 20), -- Boston to Miami: 20 Wrench Sets
+    ('2024-02-07', 11, 12, 8, 15), -- Cleveland to Minneapolis: 15 Gauze Rolls
+    ('2024-02-08', 13, 1, 2, 25) -- Omaha to NY: 25 Screwdriver Sets
+;
+
+-- Sample End Shipments
+INSERT INTO
+    end_shipments (
+        shipment_date,
+        warehouse_id,
+        destination_id,
+        kit_id,
+        quantity
+    )
+VALUES
+    ('2024-02-01', 1, 1, 1, 50), -- NY to Mexico City: 50 Tool Kits
+    ('2024-02-02', 2, 2, 2, 75), -- LA to Guadalajara: 75 Emergency Kits
+    ('2024-02-03', 3, 3, 3, 100), -- Chicago to Monterrey: 100 First Aid Kits
+    ('2024-02-04', 4, 4, 1, 60), -- Houston to Cancun: 60 Tool Kits
+    ('2024-02-05', 5, 5, 2, 80), -- Denver to Tijuana: 80 Emergency Kits
+    ('2024-02-06', 6, 6, 3, 90), -- Seattle to Puebla: 90 First Aid Kits
+    ('2024-02-07', 7, 7, 1, 45), -- Phoenix to Merida: 45 Tool Kits
+    ('2024-02-08', 8, 8, 2, 65), -- KC to Toluca: 65 Emergency Kits
+    ('2024-02-09', 9, 9, 3, 85), -- Boston to Leon: 85 First Aid Kits
+    ('2024-02-10', 10, 10, 1, 55) -- Miami to SLP: 55 Tool Kits
+;
