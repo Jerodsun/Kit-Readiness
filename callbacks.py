@@ -11,6 +11,7 @@ from database.connector import (
     create_warehouse_transfer,
     get_warehouse_transfers,
     get_end_user_shipments,
+    get_all_destinations,
 )
 from dash.exceptions import PreventUpdate
 import plotly.express as px
@@ -38,6 +39,7 @@ def register_callbacks(app):
             Output("dashboard-content", "children"),
             Output("inventory-management", "style"),
             Output("rebalance-container", "style"),
+            Output("kit-calculator-container", "style"),  # Add this output
         ],
         [Input("tabs", "active_tab")],
     )
@@ -45,6 +47,7 @@ def register_callbacks(app):
         # Default styles (hidden)
         inventory_style = {"display": "none"}
         rebalance_style = {"display": "none"}
+        calculator_style = {"display": "none"}  # Add this default
 
         if active_tab == "home":
             return (
@@ -135,6 +138,7 @@ def register_callbacks(app):
                 ),
                 inventory_style,
                 rebalance_style,
+                calculator_style,  # Add this
             )
 
         elif active_tab == "warehouse-health":
@@ -225,6 +229,7 @@ def register_callbacks(app):
                 ),
                 inventory_style,
                 rebalance_style,
+                calculator_style,
             )
 
         elif active_tab == "warehouse-inventory":
@@ -234,14 +239,39 @@ def register_callbacks(app):
                 html.Div(
                     [
                         html.H3("Warehouse Inventory Management", className="mb-4"),
-                        html.P("Select a warehouse to view and manage its inventory."),
+                        dbc.Card(
+                            [
+                                dbc.CardHeader(
+                                    [
+                                        html.H5(
+                                            "Manage Component Inventory",
+                                            className="mb-0",
+                                        ),
+                                    ]
+                                ),
+                                dbc.CardBody(
+                                    [
+                                        html.P(
+                                            """
+                                            View and update component quantities for the selected warehouse. 
+                                            Components below minimum stock are highlighted in red, 
+                                            healthy levels in green.
+                                            """
+                                        ),
+                                    ]
+                                ),
+                            ],
+                            className="mb-4",
+                        ),
                     ]
                 ),
                 inventory_style,
                 rebalance_style,
+                calculator_style,
             )
 
         elif active_tab == "kit-calculator":
+            calculator_style = {"display": "block"}
             return (
                 html.Div(
                     [
@@ -249,33 +279,11 @@ def register_callbacks(app):
                         html.P(
                             "Calculate possible kit completions based on current inventory."
                         ),
-                        dbc.Row(
-                            [
-                                dbc.Col(
-                                    [
-                                        html.Label("Select Warehouse:"),
-                                        dcc.Dropdown(
-                                            id="kit-calculator-warehouse",
-                                            options=[
-                                                {
-                                                    "label": w["warehouse_name"],
-                                                    "value": w["warehouse_id"],
-                                                }
-                                                for w in get_all_warehouses()
-                                            ],
-                                            className="mb-4",
-                                        ),
-                                    ],
-                                    width=6,
-                                ),
-                            ]
-                        ),
-                        html.Div(id="kit-calculation-results"),
-                        html.Div(id="kit-components-detail"),
                     ]
                 ),
                 inventory_style,
                 rebalance_style,
+                calculator_style,
             )
 
         elif active_tab == "rebalance-warehouses":
@@ -295,6 +303,7 @@ def register_callbacks(app):
                 ),
                 inventory_style,
                 rebalance_style,
+                calculator_style,
             )
 
         elif active_tab == "scheduled-transfers":
@@ -303,7 +312,10 @@ def register_callbacks(app):
             transfers_table = dash_table.DataTable(
                 data=[dict(row) for row in transfers],
                 columns=[
-                    {"name": "Transfer Date", "id": "shipment_date"},
+                    {
+                        "name": "Transfer Date",
+                        "id": "transfer_date",
+                    },
                     {"name": "From", "id": "source_warehouse"},
                     {"name": "To", "id": "destination_warehouse"},
                     {"name": "Component", "id": "component_name"},
@@ -333,6 +345,7 @@ def register_callbacks(app):
                 ),
                 inventory_style,
                 rebalance_style,
+                calculator_style,
             )
 
         elif active_tab == "scheduled-shipments":
@@ -371,63 +384,15 @@ def register_callbacks(app):
                 ),
                 inventory_style,
                 rebalance_style,
+                calculator_style,
             )
 
         return (
             html.Div("Select a tab to see dashboard content"),
             inventory_style,
             rebalance_style,
+            calculator_style,
         )
-
-    @app.callback(
-        [
-            Output("warehouse-selector", "options"),
-            Output("warehouse-selector", "value"),
-        ],
-        Input("tabs", "active_tab"),
-    )
-    def populate_warehouse_dropdown(active_tab):
-        if active_tab == "warehouse-inventory":
-            try:
-                warehouses = get_all_warehouses()
-                if not warehouses:
-                    raise ValueError("No warehouses found")
-                options = [
-                    {"label": w["warehouse_name"], "value": w["warehouse_id"]}
-                    for w in warehouses
-                ]
-                # Set default value to first warehouse's ID if available
-                default_value = warehouses[0]["warehouse_id"] if warehouses else None
-                return options, default_value
-            except Exception as e:
-                logger.error(f"Error fetching warehouses: {e}")
-                return [], None
-        raise PreventUpdate
-
-    @app.callback(
-        [
-            Output("kit-calculator-warehouse", "options"),
-            Output("kit-calculator-warehouse", "value"),
-        ],
-        Input("tabs", "active_tab"),
-    )
-    def populate_kit_calculator_dropdown(active_tab):
-        if active_tab == "kit-calculator":
-            try:
-                warehouses = get_all_warehouses()
-                if not warehouses:
-                    raise ValueError("No warehouses found")
-                options = [
-                    {"label": w["warehouse_name"], "value": w["warehouse_id"]}
-                    for w in warehouses
-                ]
-                # Set default value to first warehouse's ID if available
-                default_value = warehouses[0]["warehouse_id"] if warehouses else None
-                return options, default_value
-            except Exception as e:
-                logger.error(f"Error fetching warehouses: {e}")
-                return [], None
-        raise PreventUpdate
 
     @app.callback(
         [
@@ -583,107 +548,13 @@ def register_callbacks(app):
             )
 
     @app.callback(
-        Output("inventory-table-container", "children"),
-        [Input("warehouse-selector", "value")],
-    )
-    def update_inventory_table(warehouse_id):
-        if not warehouse_id:
-            return html.Div("Please select a warehouse.")
-
-        inventory = get_warehouse_inventory(warehouse_id)
-        if not inventory:
-            return html.Div("No inventory data available for this warehouse.")
-
-        return html.Div(
-            [
-                dash_table.DataTable(
-                    id="inventory-table",
-                    data=[
-                        {
-                            "component_id": row["component_id"],
-                            "component_name": row["component_name"],
-                            "description": row["description"],
-                            "quantity": row["quantity"],
-                            "min_stock": row["min_stock"],
-                            "max_stock": row["max_stock"],
-                        }
-                        for row in inventory
-                    ],
-                    columns=[
-                        {
-                            "name": "Component",
-                            "id": "component_name",
-                            "editable": False,
-                        },
-                        {"name": "Description", "id": "description", "editable": False},
-                        {
-                            "name": "Quantity",
-                            "id": "quantity",
-                            "editable": True,
-                            "type": "numeric",
-                        },
-                        {
-                            "name": "Minimum Healthy Stock",
-                            "id": "min_stock",
-                            "editable": False,
-                        },
-                        {
-                            "name": "Maximum Warehouse Capacity",
-                            "id": "max_stock",
-                            "editable": False,
-                        },
-                    ],
-                    style_table={"overflowX": "auto"},
-                    style_cell={"textAlign": "left", "padding": "10px"},
-                    style_header={
-                        "backgroundColor": "rgb(230, 230, 230)",
-                        "fontWeight": "bold",
-                    },
-                    style_data_conditional=[
-                        {
-                            "if": {
-                                "filter_query": "{quantity} < {min_stock}",
-                                "column_id": "quantity",
-                            },
-                            "backgroundColor": "#ffebee",
-                            "color": "#c62828",
-                        },
-                        {
-                            "if": {
-                                "filter_query": "{quantity} >= {min_stock} && {quantity} < {max_stock}",
-                                "column_id": "quantity",
-                            },
-                            "backgroundColor": "#fff3e0",
-                            "color": "#ef6c00",
-                        },
-                        {
-                            "if": {
-                                "filter_query": "{quantity} >= {max_stock}",
-                                "column_id": "quantity",
-                            },
-                            "backgroundColor": "#e8f5e9",
-                            "color": "#2e7d32",
-                        },
-                    ],
-                ),
-                dbc.Button(
-                    "Save Changes",
-                    id="save-inventory",
-                    color="primary",
-                    className="mt-3",
-                ),
-                html.Div(id="save-status", className="mt-2"),
-            ]
-        )
-
-    @app.callback(
         Output("save-status", "children"),
         [
             Input("save-inventory", "n_clicks"),
         ],
         [
             State("inventory-table", "data"),
-            State("warehouse-selector", "value"),
+            State("common-warehouse-selector", "value"),
         ],
         prevent_initial_call=True,
     )
@@ -706,84 +577,6 @@ def register_callbacks(app):
             )
 
     @app.callback(
-        [
-            Output("kit-calculation-results", "children"),
-            Output("kit-components-detail", "children"),
-            Output("kit-calculation-results", "style"),
-            Output("kit-components-detail", "style"),
-        ],
-        [Input("kit-calculator-warehouse", "value")],
-    )
-    def update_kit_calculations(warehouse_id):
-        possible_kits = calculate_possible_kits(warehouse_id)
-        kit_components = get_kit_components(warehouse_id)
-
-        # Create results table
-        results_table = dash_table.DataTable(
-            data=[dict(row) for row in possible_kits],
-            columns=[
-                {"name": "Kit Name", "id": "kit_name"},
-                {"name": "Possible Completions", "id": "possible_kits"},
-            ],
-            style_table={"overflowX": "auto"},
-            style_cell={"textAlign": "left", "padding": "10px"},
-            style_header={
-                "backgroundColor": "rgb(230, 230, 230)",
-                "fontWeight": "bold",
-            },
-        )
-
-        # Create components breakdown table
-        components_table = dash_table.DataTable(
-            data=[dict(row) for row in kit_components],
-            columns=[
-                {"name": "Kit", "id": "kit_name"},
-                {"name": "Component", "id": "component_name"},
-                {"name": "Required Quantity", "id": "required_quantity"},
-                {"name": "Current Inventory", "id": "current_inventory"},
-                {
-                    "name": "Possible Completions",
-                    "id": "possible_completions",
-                    "type": "numeric",
-                },
-            ],
-            style_table={"overflowX": "auto"},
-            style_cell={"textAlign": "left", "padding": "10px"},
-            style_header={
-                "backgroundColor": "rgb(230, 230, 230)",
-                "fontWeight": "bold",
-            },
-            style_data_conditional=[
-                {
-                    "if": {
-                        "filter_query": "{possible_completions} > 0",
-                        "column_id": "possible_completions",
-                    },
-                    "backgroundColor": "#e8f5e9",
-                    "color": "#2e7d32",
-                },
-            ],
-        )
-
-        return (
-            dbc.Card(
-                [
-                    dbc.CardHeader("Possible Kit Completions"),
-                    dbc.CardBody(results_table),
-                ]
-            ),
-            dbc.Card(
-                [
-                    dbc.CardHeader("Kit Component Requirements"),
-                    dbc.CardBody(components_table),
-                ],
-                className="mt-4",
-            ),
-            {"display": "block"},
-            {"display": "block"},
-        )
-
-    @app.callback(
         [Output("source-warehouse", "value"), Output("destination-warehouse", "value")],
         [Input("swap-warehouses-button", "n_clicks")],
         [State("source-warehouse", "value"), State("destination-warehouse", "value")],
@@ -793,120 +586,6 @@ def register_callbacks(app):
         if not source_id or not dest_id:
             raise PreventUpdate
         return dest_id, source_id
-
-    @app.callback(
-        Output("map-content", "figure"),
-        [
-            Input("source-warehouse", "value"),
-            Input("destination-warehouse", "value"),
-            Input("warehouse-selector", "value"),
-        ],
-    )
-    def update_map_with_selections(source_id, dest_id, inventory_id):
-        warehouses = get_all_warehouses()
-
-        # Create base map
-        fig = px.scatter_mapbox(
-            lat=[w["latitude"] for w in warehouses],
-            lon=[w["longitude"] for w in warehouses],
-            hover_name=[w["warehouse_name"] for w in warehouses],
-            zoom=3,
-            mapbox_style="carto-positron",
-        )
-
-        fig.update_layout(
-            mapbox=dict(
-                bearing=0,
-                pitch=0,
-            ),
-            margin={"r": 0, "t": 0, "l": 0, "b": 0},
-            showlegend=False,
-            paper_bgcolor="white",
-            plot_bgcolor="white",
-            title="Map",
-        )
-
-        # Handle rebalancing warehouse connections
-        if source_id and dest_id:
-            source = next(
-                (w for w in warehouses if w["warehouse_id"] == source_id), None
-            )
-            dest = next((w for w in warehouses if w["warehouse_id"] == dest_id), None)
-
-            if source and dest:
-                # Add connection line
-                fig.add_trace(
-                    dict(
-                        type="scattermapbox",
-                        lon=[source["longitude"], dest["longitude"]],
-                        lat=[source["latitude"], dest["latitude"]],
-                        mode="lines",
-                        line=dict(
-                            width=2,
-                            color="#3072b4",
-                        ),
-                        hoverinfo="skip",
-                    )
-                )
-
-                # Add source and destination markers
-                fig.add_trace(
-                    dict(
-                        type="scattermapbox",
-                        lon=[source["longitude"]],
-                        lat=[source["latitude"]],
-                        mode="markers",
-                        marker=dict(size=12, color="#e74c3c"),
-                        name="Source",
-                        hovertext=f"Source: {source['warehouse_name']}",
-                    )
-                )
-
-                fig.add_trace(
-                    dict(
-                        type="scattermapbox",
-                        lon=[dest["longitude"]],
-                        lat=[dest["latitude"]],
-                        mode="markers",
-                        marker=dict(size=12, color="#27ae60"),
-                        name="Destination",
-                        hovertext=f"Destination: {dest['warehouse_name']}",
-                    )
-                )
-
-        # Handle inventory warehouse selection
-        if inventory_id:
-            selected = next(
-                (w for w in warehouses if w["warehouse_id"] == inventory_id), None
-            )
-            if selected:
-                # Add circle around selected warehouse
-                fig.add_trace(
-                    dict(
-                        type="scattermapbox",
-                        lon=[selected["longitude"]],
-                        lat=[selected["latitude"]],
-                        mode="markers",
-                        marker=dict(
-                            size=25, color="rgba(48, 114, 180, 0.3)", symbol="circle"
-                        ),
-                        hoverinfo="skip",
-                    )
-                )
-                # Add center point
-                fig.add_trace(
-                    dict(
-                        type="scattermapbox",
-                        lon=[selected["longitude"]],
-                        lat=[selected["latitude"]],
-                        mode="markers",
-                        marker=dict(size=8, color="#3072b4"),
-                        name="Selected Warehouse",
-                        hovertext=f"Selected: {selected['warehouse_name']}",
-                    )
-                )
-
-        return fig
 
     @app.callback(
         [
@@ -1013,3 +692,326 @@ def register_callbacks(app):
                 return True, component_selector, quantity_input, message
 
         return is_open, component_selector, quantity_input, message
+
+    @app.callback(
+        [
+            Output("common-warehouse-selector", "options"),
+            Output("common-warehouse-selector", "value"),
+        ],
+        [Input("tabs", "active_tab")],
+        [State("common-warehouse-selector", "value")],
+    )
+    def populate_warehouse_dropdown(active_tab, current_value):
+        try:
+            warehouses = get_all_warehouses()
+            if not warehouses:
+                raise ValueError("No warehouses found")
+            options = [
+                {"label": w["warehouse_name"], "value": w["warehouse_id"]}
+                for w in warehouses
+            ]
+            # Only set default value if there isn't one already
+            default_value = (
+                current_value if current_value else warehouses[0]["warehouse_id"]
+            )
+            return options, default_value
+        except Exception as e:
+            logger.error(f"Error fetching warehouses: {e}")
+            return [], None
+        return [], None
+
+    # Update the inventory table callback to use common selector
+    @app.callback(
+        Output("inventory-table-container", "children"),
+        [Input("common-warehouse-selector", "value")],
+    )
+    def update_inventory_table(warehouse_id):
+        if not warehouse_id:
+            return html.Div("Please select a warehouse.")
+
+        inventory = get_warehouse_inventory(warehouse_id)
+        if not inventory:
+            return html.Div("No inventory data available for this warehouse.")
+
+        return html.Div(
+            [
+                dash_table.DataTable(
+                    id="inventory-table",
+                    data=[
+                        {
+                            "component_id": row["component_id"],
+                            "component_name": row["component_name"],
+                            "description": row["description"],
+                            "quantity": row["quantity"],
+                            "min_stock": row["min_stock"],
+                            "max_stock": row["max_stock"],
+                        }
+                        for row in inventory
+                    ],
+                    columns=[
+                        {
+                            "name": "Component",
+                            "id": "component_name",
+                            "editable": False,
+                        },
+                        {"name": "Description", "id": "description", "editable": False},
+                        {
+                            "name": "Quantity",
+                            "id": "quantity",
+                            "editable": True,
+                            "type": "numeric",
+                        },
+                        {
+                            "name": "Minimum Healthy Stock",
+                            "id": "min_stock",
+                            "editable": False,
+                        },
+                        {
+                            "name": "Maximum Warehouse Capacity",
+                            "id": "max_stock",
+                            "editable": False,
+                        },
+                    ],
+                    style_table={"overflowX": "auto"},
+                    style_cell={"textAlign": "left", "padding": "10px"},
+                    style_header={
+                        "backgroundColor": "rgb(230, 230, 230)",
+                        "fontWeight": "bold",
+                    },
+                    style_data_conditional=[
+                        {
+                            "if": {
+                                "filter_query": "{quantity} < {min_stock}",
+                                "column_id": "quantity",
+                            },
+                            "backgroundColor": "#ffebee",
+                            "color": "#c62828",
+                        },
+                        {
+                            "if": {
+                                "filter_query": "{quantity} >= {min_stock} && {quantity} < {max_stock}",
+                                "column_id": "quantity",
+                            },
+                            "backgroundColor": "#fff3e0",
+                            "color": "#ef6c00",
+                        },
+                        {
+                            "if": {
+                                "filter_query": "{quantity} >= {max_stock}",
+                                "column_id": "quantity",
+                            },
+                            "backgroundColor": "#e8f5e9",
+                            "color": "#2e7d32",
+                        },
+                    ],
+                ),
+                dbc.Button(
+                    "Save Changes",
+                    id="save-inventory",
+                    color="primary",
+                    className="mt-3",
+                ),
+                html.Div(id="save-status", className="mt-2"),
+            ]
+        )
+
+    # Update the kit calculations callback to use common selector
+    @app.callback(
+        [
+            Output("kit-calculation-results", "children"),
+            Output("kit-components-detail", "children"),
+            Output("kit-calculation-results", "style"),
+            Output("kit-components-detail", "style"),
+        ],
+        [Input("common-warehouse-selector", "value")],
+    )
+    def update_kit_calculations(warehouse_id):
+        possible_kits = calculate_possible_kits(warehouse_id)
+        kit_components = get_kit_components(warehouse_id)
+
+        # Create results table
+        results_table = dash_table.DataTable(
+            data=[dict(row) for row in possible_kits],
+            columns=[
+                {"name": "Kit Name", "id": "kit_name"},
+                {"name": "Possible Completions", "id": "possible_kits"},
+            ],
+            style_table={"overflowX": "auto"},
+            style_cell={"textAlign": "left", "padding": "10px"},
+            style_header={
+                "backgroundColor": "rgb(230, 230, 230)",
+                "fontWeight": "bold",
+            },
+        )
+
+        # Create components breakdown table
+        components_table = dash_table.DataTable(
+            data=[dict(row) for row in kit_components],
+            columns=[
+                {"name": "Kit", "id": "kit_name"},
+                {"name": "Component", "id": "component_name"},
+                {"name": "Required Quantity", "id": "required_quantity"},
+                {"name": "Current Inventory", "id": "current_inventory"},
+                {
+                    "name": "Possible Completions",
+                    "id": "possible_completions",
+                    "type": "numeric",
+                },
+            ],
+            style_table={"overflowX": "auto"},
+            style_cell={"textAlign": "left", "padding": "10px"},
+            style_header={
+                "backgroundColor": "rgb(230, 230, 230)",
+                "fontWeight": "bold",
+            },
+            style_data_conditional=[
+                {
+                    "if": {
+                        "filter_query": "{possible_completions} > 0",
+                        "column_id": "possible_completions",
+                    },
+                    "backgroundColor": "#e8f5e9",
+                    "color": "#2e7d32",
+                },
+            ],
+        )
+
+        return (
+            dbc.Card(
+                [
+                    dbc.CardHeader("Possible Kit Completions"),
+                    dbc.CardBody(results_table),
+                ]
+            ),
+            dbc.Card(
+                [
+                    dbc.CardHeader("Kit Component Requirements"),
+                    dbc.CardBody(components_table),
+                ],
+                className="mt-4",
+            ),
+            {"display": "block"},
+            {"display": "block"},
+        )
+
+    # Update map callback to use common selector
+    @app.callback(
+        Output("map-content", "figure"),
+        [
+            Input("source-warehouse", "value"),
+            Input("destination-warehouse", "value"),
+            Input("common-warehouse-selector", "value"),
+        ],
+    )
+    def update_map_with_selections(source_id, dest_id, inventory_id):
+        warehouses = get_all_warehouses()
+        destinations = get_all_destinations()
+
+        # Create base map
+        fig = px.scatter_mapbox(
+            lat=[w["latitude"] for w in warehouses]
+            + [d["latitude"] for d in destinations],
+            lon=[w["longitude"] for w in warehouses]
+            + [d["longitude"] for d in destinations],
+            hover_name=[w["warehouse_name"] for w in warehouses]
+            + [d["destination_name"] for d in destinations],
+            color=["Warehouse" for _ in warehouses]
+            + ["Destination" for _ in destinations],
+            color_discrete_map={"Warehouse": "#3072b4", "Destination": "#e67e22"},
+            zoom=3,
+            mapbox_style="carto-positron",
+        )
+
+        fig.update_layout(
+            mapbox=dict(bearing=0, pitch=0),
+            margin={"r": 0, "t": 0, "l": 0, "b": 0},
+            showlegend=True,
+            paper_bgcolor="white",
+            plot_bgcolor="white",
+            legend_title_text="Legend",
+            legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
+        )
+
+        # Handle rebalancing warehouse connections
+        if source_id and dest_id:
+            source = next(
+                (w for w in warehouses if w["warehouse_id"] == source_id), None
+            )
+            dest = next((w for w in warehouses if w["warehouse_id"] == dest_id), None)
+
+            if source and dest:
+                # Add connection line
+                fig.add_trace(
+                    dict(
+                        type="scattermapbox",
+                        lon=[source["longitude"], dest["longitude"]],
+                        lat=[source["latitude"], dest["latitude"]],
+                        mode="lines",
+                        line=dict(
+                            width=2,
+                            color="#3072b4",
+                        ),
+                        name="Transfer Route",
+                        hoverinfo="skip",
+                    )
+                )
+
+                # Add source and destination markers
+                fig.add_trace(
+                    dict(
+                        type="scattermapbox",
+                        lon=[source["longitude"]],
+                        lat=[source["latitude"]],
+                        mode="markers",
+                        marker=dict(size=12, color="#e74c3c"),
+                        name="Source Warehouse",
+                        hovertext=f"Source: {source['warehouse_name']}",
+                    )
+                )
+
+                fig.add_trace(
+                    dict(
+                        type="scattermapbox",
+                        lon=[dest["longitude"]],
+                        lat=[dest["latitude"]],
+                        mode="markers",
+                        marker=dict(size=12, color="#27ae60"),
+                        name="Destination Warehouse",
+                        hovertext=f"Destination: {dest['warehouse_name']}",
+                    )
+                )
+
+        # Handle inventory warehouse selection
+        if inventory_id:
+            selected = next(
+                (w for w in warehouses if w["warehouse_id"] == inventory_id), None
+            )
+            if selected:
+                # Add selection markers with proper names
+                fig.add_trace(
+                    dict(
+                        type="scattermapbox",
+                        lon=[selected["longitude"]],
+                        lat=[selected["latitude"]],
+                        mode="markers",
+                        marker=dict(
+                            size=25, color="rgba(48, 114, 180, 0.3)", symbol="circle"
+                        ),
+                        name="Selection Highlight",
+                        hoverinfo="skip",
+                        showlegend=False,
+                    )
+                )
+                fig.add_trace(
+                    dict(
+                        type="scattermapbox",
+                        lon=[selected["longitude"]],
+                        lat=[selected["latitude"]],
+                        mode="markers",
+                        marker=dict(size=8, color="#3072b4"),
+                        name="Active Warehouse",
+                        hovertext=f"Selected: {selected['warehouse_name']}",
+                    )
+                )
+
+        return fig

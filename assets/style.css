@@ -71,15 +71,25 @@ h3 {
     right: 0;
     top: 60px;
     bottom: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-.map-content {
-    height: calc(100% - 20px) !important;
-    width: calc(100% - 20px) !important;
-    padding: 20px;
+.map-container {
+    flex: 1;
+    position: relative;
     border-radius: 12px;
     box-shadow: 0 4px 12px var(--shadow);
     overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.map-content {
+    height: 100% !important;
+    width: 100% !important;
+    padding: 10px;
 }
 
 .container {
@@ -94,12 +104,12 @@ h3 {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-#warehouse-selector {
+#common-warehouse-selector {
     width: 100%;
     margin-bottom: 20px;
 }
 
-#warehouse-selector .Select-control {
+#common-warehouse-selector .Select-control {
     border-radius: 4px;
     border: 1px solid #ced4da;
 }
@@ -289,6 +299,7 @@ h3 {
     letter-spacing: 0.5px;
     font-size: 0.9rem;
 }
+
 #help-button {
     background: rgba(255, 255, 255, 0.2);
     color: white;
@@ -344,8 +355,13 @@ h3 {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Scrollbar styling */
@@ -373,18 +389,18 @@ h3 {
     .main-content {
         flex-direction: column;
     }
-    
+
     .left-column,
     .right-column {
         width: 100%;
         position: relative;
     }
-    
+
     .right-column {
         height: 300px;
         top: auto;
     }
-    
+
     .card {
         margin: 0.5rem 0;
     }
