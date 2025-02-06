@@ -385,9 +385,10 @@ def register_callbacks(app):
             Output("warehouse-selector", "options"),
             Output("warehouse-selector", "value"),
         ],
-        Input("tabs", "active_tab"),
+        [Input("tabs", "active_tab")],
+        [State("warehouse-selector", "value")],  # Add state to preserve current value
     )
-    def populate_warehouse_dropdown(active_tab):
+    def populate_warehouse_dropdown(active_tab, current_value):
         if active_tab == "warehouse-inventory":
             try:
                 warehouses = get_all_warehouses()
@@ -397,8 +398,10 @@ def register_callbacks(app):
                     {"label": w["warehouse_name"], "value": w["warehouse_id"]}
                     for w in warehouses
                 ]
-                # Set default value to first warehouse's ID if available
-                default_value = warehouses[0]["warehouse_id"] if warehouses else None
+                # Only set default value if there isn't one already
+                default_value = (
+                    current_value if current_value else warehouses[0]["warehouse_id"]
+                )
                 return options, default_value
             except Exception as e:
                 logger.error(f"Error fetching warehouses: {e}")
