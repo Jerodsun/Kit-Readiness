@@ -11,6 +11,7 @@ from database.connector import (
     create_warehouse_transfer,
     get_warehouse_transfers,
     get_end_user_shipments,
+    get_all_destinations,
 )
 from dash.exceptions import PreventUpdate
 import plotly.express as px
@@ -804,26 +805,29 @@ def register_callbacks(app):
     )
     def update_map_with_selections(source_id, dest_id, inventory_id):
         warehouses = get_all_warehouses()
+        destinations = get_all_destinations()
 
         # Create base map
         fig = px.scatter_mapbox(
-            lat=[w["latitude"] for w in warehouses],
-            lon=[w["longitude"] for w in warehouses],
-            hover_name=[w["warehouse_name"] for w in warehouses],
+            lat=[w["latitude"] for w in warehouses]
+            + [d["latitude"] for d in destinations],
+            lon=[w["longitude"] for w in warehouses]
+            + [d["longitude"] for d in destinations],
+            hover_name=[w["warehouse_name"] for w in warehouses]
+            + [d["destination_name"] for d in destinations],
+            color=["Warehouse" for _ in warehouses]
+            + ["Destination" for _ in destinations],
+            color_discrete_map={"Warehouse": "#3072b4", "Destination": "#e67e22"},
             zoom=3,
             mapbox_style="carto-positron",
         )
 
         fig.update_layout(
-            mapbox=dict(
-                bearing=0,
-                pitch=0,
-            ),
+            mapbox=dict(bearing=0, pitch=0),
             margin={"r": 0, "t": 0, "l": 0, "b": 0},
-            showlegend=False,
+            showlegend=True,
             paper_bgcolor="white",
             plot_bgcolor="white",
-            title="Map",
         )
 
         # Handle rebalancing warehouse connections

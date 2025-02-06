@@ -429,3 +429,18 @@ def get_end_user_shipments():
             """
         ).fetchall()
         return result
+
+
+def get_all_destinations():
+    """Fetches all destination locations"""
+    logger.info("Fetching all destinations.")
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        result = cursor.execute(
+            """
+            SELECT * FROM destinations
+            ORDER BY destination_name
+            """
+        ).fetchall()
+        logger.info(f"Retrieved {len(result)} destinations.")
+        return result
