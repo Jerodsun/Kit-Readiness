@@ -4,7 +4,7 @@ import plotly.express as px
 from database.connector import get_all_warehouses
 from datetime import date
 
-
+### This creates the initial layout
 def create_layout():
     # Get warehouse data
     warehouses = get_all_warehouses()
@@ -24,7 +24,7 @@ def create_layout():
             pitch=0,
         ),
         margin={"r": 0, "t": 0, "l": 0, "b": 0},
-        showlegend=False,
+        showlegend=True,
         paper_bgcolor="white",
         plot_bgcolor="white",
     )
