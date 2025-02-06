@@ -5,6 +5,7 @@ from database.connector import get_all_warehouses
 from datetime import date
 
 
+### This creates the initial layout
 def create_layout():
     # Get warehouse data
     warehouses = get_all_warehouses()
@@ -24,7 +25,7 @@ def create_layout():
             pitch=0,
         ),
         margin={"r": 0, "t": 0, "l": 0, "b": 0},
-        showlegend=False,
+        showlegend=True,
         paper_bgcolor="white",
         plot_bgcolor="white",
     )
@@ -88,20 +89,6 @@ def create_layout():
                             # Add inventory management container to initial layout
                             html.Div(
                                 [
-                                    dbc.Row(
-                                        [
-                                            dbc.Col(
-                                                [
-                                                    html.Label("Select Warehouse:"),
-                                                    dcc.Dropdown(
-                                                        id="warehouse-selector",
-                                                        className="mb-4",
-                                                    ),
-                                                ],
-                                                width=6,
-                                            ),
-                                        ]
-                                    ),
                                     html.Div(
                                         dash_table.DataTable(
                                             id="inventory-table",
@@ -150,17 +137,14 @@ def create_layout():
                                 id="inventory-management",
                                 style={"display": "none"},
                             ),  # Hidden by default
-                            # Add kit calculator containers
-                            html.Div(id="kit-calculation-results"),
-                            html.Div(id="kit-components-detail"),
+                            # Add kit calculator containers with display: none by default
                             html.Div(
                                 [
-                                    dcc.Dropdown(
-                                        id="kit-calculator-warehouse", className="mb-4"
-                                    ),
+                                    html.Div(id="kit-calculation-results"),
+                                    html.Div(id="kit-components-detail"),
                                 ],
-                                id="kit-calculator-warehouse-selector",
-                                style={"display": "none"},
+                                id="kit-calculator-container",
+                                style={"display": "none"},  # Hidden by default
                             ),
                             # Add rebalancing container
                             html.Div(
@@ -325,9 +309,29 @@ def create_layout():
                     # Right column (map)
                     html.Div(
                         [
-                            dcc.Graph(
-                                figure=fig, id="map-content", className="map-content"
-                            )
+                            dbc.Card(
+                                dbc.CardBody(
+                                    [
+                                        html.Label(
+                                            "Active Warehouse:",
+                                            className="mb-2 fw-bold",
+                                        ),
+                                        dcc.Dropdown(
+                                            id="common-warehouse-selector",
+                                            className="mb-2",
+                                        ),
+                                    ]
+                                ),
+                                className="mb-4 mt-3",
+                            ),
+                            html.Div(
+                                dcc.Graph(
+                                    figure=fig,
+                                    id="map-content",
+                                    className="map-content",
+                                ),
+                                className="map-container",
+                            ),
                         ],
                         className="right-column",
                     ),
