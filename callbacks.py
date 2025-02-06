@@ -39,6 +39,7 @@ def register_callbacks(app):
             Output("dashboard-content", "children"),
             Output("inventory-management", "style"),
             Output("rebalance-container", "style"),
+            Output("kit-calculator-container", "style"),  # Add this output
         ],
         [Input("tabs", "active_tab")],
     )
@@ -46,6 +47,7 @@ def register_callbacks(app):
         # Default styles (hidden)
         inventory_style = {"display": "none"}
         rebalance_style = {"display": "none"}
+        calculator_style = {"display": "none"}  # Add this default
 
         if active_tab == "home":
             return (
@@ -136,6 +138,7 @@ def register_callbacks(app):
                 ),
                 inventory_style,
                 rebalance_style,
+                calculator_style,  # Add this
             )
 
         elif active_tab == "warehouse-health":
@@ -226,6 +229,7 @@ def register_callbacks(app):
                 ),
                 inventory_style,
                 rebalance_style,
+                calculator_style,
             )
 
         elif active_tab == "warehouse-inventory":
@@ -235,14 +239,39 @@ def register_callbacks(app):
                 html.Div(
                     [
                         html.H3("Warehouse Inventory Management", className="mb-4"),
-                        html.P("Select a warehouse to view and manage its inventory."),
+                        dbc.Card(
+                            [
+                                dbc.CardHeader(
+                                    [
+                                        html.H5(
+                                            "Manage Component Inventory",
+                                            className="mb-0",
+                                        ),
+                                    ]
+                                ),
+                                dbc.CardBody(
+                                    [
+                                        html.P(
+                                            """
+                                            View and update component quantities for the selected warehouse. 
+                                            Components below minimum stock are highlighted in red, 
+                                            healthy levels in green.
+                                            """
+                                        ),
+                                    ]
+                                ),
+                            ],
+                            className="mb-4",
+                        ),
                     ]
                 ),
                 inventory_style,
                 rebalance_style,
+                calculator_style,
             )
 
         elif active_tab == "kit-calculator":
+            calculator_style = {"display": "block"}
             return (
                 html.Div(
                     [
@@ -250,33 +279,11 @@ def register_callbacks(app):
                         html.P(
                             "Calculate possible kit completions based on current inventory."
                         ),
-                        dbc.Row(
-                            [
-                                dbc.Col(
-                                    [
-                                        html.Label("Select Warehouse:"),
-                                        dcc.Dropdown(
-                                            id="kit-calculator-warehouse",
-                                            options=[
-                                                {
-                                                    "label": w["warehouse_name"],
-                                                    "value": w["warehouse_id"],
-                                                }
-                                                for w in get_all_warehouses()
-                                            ],
-                                            className="mb-4",
-                                        ),
-                                    ],
-                                    width=6,
-                                ),
-                            ]
-                        ),
-                        html.Div(id="kit-calculation-results"),
-                        html.Div(id="kit-components-detail"),
                     ]
                 ),
                 inventory_style,
                 rebalance_style,
+                calculator_style,
             )
 
         elif active_tab == "rebalance-warehouses":
@@ -296,6 +303,7 @@ def register_callbacks(app):
                 ),
                 inventory_style,
                 rebalance_style,
+                calculator_style,
             )
 
         elif active_tab == "scheduled-transfers":
@@ -334,6 +342,7 @@ def register_callbacks(app):
                 ),
                 inventory_style,
                 rebalance_style,
+                calculator_style,
             )
 
         elif active_tab == "scheduled-shipments":
@@ -372,66 +381,15 @@ def register_callbacks(app):
                 ),
                 inventory_style,
                 rebalance_style,
+                calculator_style,
             )
 
         return (
             html.Div("Select a tab to see dashboard content"),
             inventory_style,
             rebalance_style,
+            calculator_style,
         )
-
-    @app.callback(
-        [
-            Output("warehouse-selector", "options"),
-            Output("warehouse-selector", "value"),
-        ],
-        [Input("tabs", "active_tab")],
-        [State("warehouse-selector", "value")],  # Add state to preserve current value
-    )
-    def populate_warehouse_dropdown(active_tab, current_value):
-        if active_tab == "warehouse-inventory":
-            try:
-                warehouses = get_all_warehouses()
-                if not warehouses:
-                    raise ValueError("No warehouses found")
-                options = [
-                    {"label": w["warehouse_name"], "value": w["warehouse_id"]}
-                    for w in warehouses
-                ]
-                # Only set default value if there isn't one already
-                default_value = (
-                    current_value if current_value else warehouses[0]["warehouse_id"]
-                )
-                return options, default_value
-            except Exception as e:
-                logger.error(f"Error fetching warehouses: {e}")
-                return [], None
-        raise PreventUpdate
-
-    @app.callback(
-        [
-            Output("kit-calculator-warehouse", "options"),
-            Output("kit-calculator-warehouse", "value"),
-        ],
-        Input("tabs", "active_tab"),
-    )
-    def populate_kit_calculator_dropdown(active_tab):
-        if active_tab == "kit-calculator":
-            try:
-                warehouses = get_all_warehouses()
-                if not warehouses:
-                    raise ValueError("No warehouses found")
-                options = [
-                    {"label": w["warehouse_name"], "value": w["warehouse_id"]}
-                    for w in warehouses
-                ]
-                # Set default value to first warehouse's ID if available
-                default_value = warehouses[0]["warehouse_id"] if warehouses else None
-                return options, default_value
-            except Exception as e:
-                logger.error(f"Error fetching warehouses: {e}")
-                return [], None
-        raise PreventUpdate
 
     @app.callback(
         [
@@ -587,8 +545,182 @@ def register_callbacks(app):
             )
 
     @app.callback(
+        Output("save-status", "children"),
+        [
+            Input("save-inventory", "n_clicks"),
+        ],
+        [
+            State("inventory-table", "data"),
+            State("common-warehouse-selector", "value"),
+        ],
+        prevent_initial_call=True,
+    )
+    def save_inventory_changes(n_clicks, table_data, warehouse_id):
+        if not n_clicks or not table_data or not warehouse_id:
+            raise PreventUpdate
+
+        updates = [
+            {"component_id": row["component_id"], "quantity": row["quantity"]}
+            for row in table_data
+        ]
+
+        success = update_warehouse_inventory(warehouse_id, updates)
+
+        if success:
+            return html.Div("Changes saved successfully!", className="text-success")
+        else:
+            return html.Div(
+                "Error saving changes. Please try again.", className="text-danger"
+            )
+
+    @app.callback(
+        [Output("source-warehouse", "value"), Output("destination-warehouse", "value")],
+        [Input("swap-warehouses-button", "n_clicks")],
+        [State("source-warehouse", "value"), State("destination-warehouse", "value")],
+        prevent_initial_call=True,
+    )
+    def swap_warehouses(n_clicks, source_id, dest_id):
+        if not source_id or not dest_id:
+            raise PreventUpdate
+        return dest_id, source_id
+
+    @app.callback(
+        [
+            Output("transfer-modal", "is_open"),
+            Output("transfer-kit-selector", "children"),
+            Output("transfer-quantity-input", "children"),
+            Output("transfer-message", "children"),
+        ],
+        [
+            Input("schedule-transfers", "n_clicks"),
+            Input("cancel-transfer", "n_clicks"),
+            Input("confirm-transfer", "n_clicks"),
+        ],
+        [
+            State("transfer-modal", "is_open"),
+            State("source-warehouse", "value"),
+            State("destination-warehouse", "value"),
+            State("shipment-date", "date"),
+            State("transfer-component-selector", "value"),
+            State("transfer-quantity", "value"),
+            State("suggestions-store", "data"),
+        ],
+    )
+    def handle_transfer_modal(
+        schedule_n,
+        cancel_n,
+        confirm_n,
+        is_open,
+        source_id,
+        dest_id,
+        transfer_date,
+        selected_component,
+        quantity,
+        suggestions,
+    ):
+        triggered_id = ctx.triggered_id if ctx.triggered_id else None
+
+        # Create component selector using suggestions from store
+        component_selector = dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        html.Label("Select Component to Transfer:"),
+                        dcc.Dropdown(
+                            id="transfer-component-selector",
+                            options=[
+                                {
+                                    "label": row["component"],
+                                    "value": row["component_id"],
+                                }
+                                for row in (suggestions or [])
+                            ],
+                            className="mb-3",
+                        ),
+                    ]
+                )
+            ]
+        )
+
+        quantity_input = dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        html.Label("Transfer Quantity:"),
+                        dbc.Input(
+                            type="number",
+                            id="transfer-quantity",
+                            min=1,
+                            className="mb-3",
+                        ),
+                    ]
+                )
+            ]
+        )
+
+        message = ""
+
+        if triggered_id == "schedule-transfers" and schedule_n:
+            return True, component_selector, quantity_input, message
+
+        elif triggered_id == "cancel-transfer":
+            return False, component_selector, quantity_input, message
+
+        elif triggered_id == "confirm-transfer":
+            if not all(
+                [source_id, dest_id, transfer_date, selected_component, quantity]
+            ):
+                message = html.Div("Please fill in all fields", className="text-danger")
+                return True, component_selector, quantity_input, message
+
+            # Create transfer record using correct function
+            success = create_warehouse_transfer(
+                source_id=source_id,
+                dest_id=dest_id,
+                component_id=selected_component,
+                quantity=quantity,
+                transfer_date=transfer_date,
+            )
+
+            if success:
+                return False, component_selector, quantity_input, message
+            else:
+                message = html.Div("Error scheduling transfer", className="text-danger")
+                return True, component_selector, quantity_input, message
+
+        return is_open, component_selector, quantity_input, message
+
+    @app.callback(
+        [
+            Output("common-warehouse-selector", "options"),
+            Output("common-warehouse-selector", "value"),
+        ],
+        [Input("tabs", "active_tab")],
+        [State("common-warehouse-selector", "value")],
+    )
+    def populate_warehouse_dropdown(active_tab, current_value):
+        try:
+            warehouses = get_all_warehouses()
+            if not warehouses:
+                raise ValueError("No warehouses found")
+            options = [
+                {"label": w["warehouse_name"], "value": w["warehouse_id"]}
+                for w in warehouses
+            ]
+            # Only set default value if there isn't one already
+            default_value = (
+                current_value if current_value else warehouses[0]["warehouse_id"]
+            )
+            return options, default_value
+        except Exception as e:
+            logger.error(f"Error fetching warehouses: {e}")
+            return [], None
+        return [], None
+
+    # Update the inventory table callback to use common selector
+    @app.callback(
         Output("inventory-table-container", "children"),
-        [Input("warehouse-selector", "value")],
+        [Input("common-warehouse-selector", "value")],
     )
     def update_inventory_table(warehouse_id):
         if not warehouse_id:
@@ -680,35 +812,7 @@ def register_callbacks(app):
             ]
         )
 
-    @app.callback(
-        Output("save-status", "children"),
-        [
-            Input("save-inventory", "n_clicks"),
-        ],
-        [
-            State("inventory-table", "data"),
-            State("warehouse-selector", "value"),
-        ],
-        prevent_initial_call=True,
-    )
-    def save_inventory_changes(n_clicks, table_data, warehouse_id):
-        if not n_clicks or not table_data or not warehouse_id:
-            raise PreventUpdate
-
-        updates = [
-            {"component_id": row["component_id"], "quantity": row["quantity"]}
-            for row in table_data
-        ]
-
-        success = update_warehouse_inventory(warehouse_id, updates)
-
-        if success:
-            return html.Div("Changes saved successfully!", className="text-success")
-        else:
-            return html.Div(
-                "Error saving changes. Please try again.", className="text-danger"
-            )
-
+    # Update the kit calculations callback to use common selector
     @app.callback(
         [
             Output("kit-calculation-results", "children"),
@@ -716,7 +820,7 @@ def register_callbacks(app):
             Output("kit-calculation-results", "style"),
             Output("kit-components-detail", "style"),
         ],
-        [Input("kit-calculator-warehouse", "value")],
+        [Input("common-warehouse-selector", "value")],
     )
     def update_kit_calculations(warehouse_id):
         possible_kits = calculate_possible_kits(warehouse_id)
@@ -787,23 +891,13 @@ def register_callbacks(app):
             {"display": "block"},
         )
 
-    @app.callback(
-        [Output("source-warehouse", "value"), Output("destination-warehouse", "value")],
-        [Input("swap-warehouses-button", "n_clicks")],
-        [State("source-warehouse", "value"), State("destination-warehouse", "value")],
-        prevent_initial_call=True,
-    )
-    def swap_warehouses(n_clicks, source_id, dest_id):
-        if not source_id or not dest_id:
-            raise PreventUpdate
-        return dest_id, source_id
-
+    # Update map callback to use common selector
     @app.callback(
         Output("map-content", "figure"),
         [
             Input("source-warehouse", "value"),
             Input("destination-warehouse", "value"),
-            Input("warehouse-selector", "value"),
+            Input("common-warehouse-selector", "value"),
         ],
     )
     def update_map_with_selections(source_id, dest_id, inventory_id):
@@ -914,109 +1008,3 @@ def register_callbacks(app):
                 )
 
         return fig
-
-    @app.callback(
-        [
-            Output("transfer-modal", "is_open"),
-            Output("transfer-kit-selector", "children"),
-            Output("transfer-quantity-input", "children"),
-            Output("transfer-message", "children"),
-        ],
-        [
-            Input("schedule-transfers", "n_clicks"),
-            Input("cancel-transfer", "n_clicks"),
-            Input("confirm-transfer", "n_clicks"),
-        ],
-        [
-            State("transfer-modal", "is_open"),
-            State("source-warehouse", "value"),
-            State("destination-warehouse", "value"),
-            State("shipment-date", "date"),
-            State("transfer-component-selector", "value"),
-            State("transfer-quantity", "value"),
-            State("suggestions-store", "data"),
-        ],
-    )
-    def handle_transfer_modal(
-        schedule_n,
-        cancel_n,
-        confirm_n,
-        is_open,
-        source_id,
-        dest_id,
-        transfer_date,
-        selected_component,
-        quantity,
-        suggestions,
-    ):
-        triggered_id = ctx.triggered_id if ctx.triggered_id else None
-
-        # Create component selector using suggestions from store
-        component_selector = dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        html.Label("Select Component to Transfer:"),
-                        dcc.Dropdown(
-                            id="transfer-component-selector",
-                            options=[
-                                {
-                                    "label": row["component"],
-                                    "value": row["component_id"],
-                                }
-                                for row in (suggestions or [])
-                            ],
-                            className="mb-3",
-                        ),
-                    ]
-                )
-            ]
-        )
-
-        quantity_input = dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        html.Label("Transfer Quantity:"),
-                        dbc.Input(
-                            type="number",
-                            id="transfer-quantity",
-                            min=1,
-                            className="mb-3",
-                        ),
-                    ]
-                )
-            ]
-        )
-
-        message = ""
-
-        if triggered_id == "schedule-transfers" and schedule_n:
-            return True, component_selector, quantity_input, message
-
-        elif triggered_id == "cancel-transfer":
-            return False, component_selector, quantity_input, message
-
-        elif triggered_id == "confirm-transfer":
-            if not all(
-                [source_id, dest_id, transfer_date, selected_component, quantity]
-            ):
-                message = html.Div("Please fill in all fields", className="text-danger")
-                return True, component_selector, quantity_input, message
-
-            # Create transfer record using correct function
-            success = create_warehouse_transfer(
-                source_id=source_id,
-                dest_id=dest_id,
-                component_id=selected_component,
-                quantity=quantity,
-                transfer_date=transfer_date,
-            )
-
-            if success:
-                return False, component_selector, quantity_input, message
-            else:
-                message = html.Div("Error scheduling transfer", className="text-danger")
-                return True, component_selector, quantity_input, message
-
-        return is_open, component_selector, quantity_input, message

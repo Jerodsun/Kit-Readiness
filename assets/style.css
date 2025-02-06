@@ -94,12 +94,12 @@ h3 {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-#warehouse-selector {
+#common-warehouse-selector {
     width: 100%;
     margin-bottom: 20px;
 }
 
-#warehouse-selector .Select-control {
+#common-warehouse-selector .Select-control {
     border-radius: 4px;
     border: 1px solid #ced4da;
 }
