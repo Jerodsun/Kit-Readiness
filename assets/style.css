@@ -71,6 +71,8 @@ h3 {
     right: 0;
     top: 60px;
     bottom: 0;
+    padding: 20px;
+    overflow-y: auto;
 }
 
 .map-content {
@@ -80,6 +82,18 @@ h3 {
     border-radius: 12px;
     box-shadow: 0 4px 12px var(--shadow);
     overflow: hidden;
+}
+
+.map-container {
+    position: relative;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow);
+    overflow: hidden;
+}
+
+.map-content {
+    height: 80% !important;
+    width: 100% !important;
 }
 
 .container {
@@ -289,6 +303,7 @@ h3 {
     letter-spacing: 0.5px;
     font-size: 0.9rem;
 }
+
 #help-button {
     background: rgba(255, 255, 255, 0.2);
     color: white;
@@ -344,8 +359,13 @@ h3 {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Scrollbar styling */
@@ -373,18 +393,18 @@ h3 {
     .main-content {
         flex-direction: column;
     }
-    
+
     .left-column,
     .right-column {
         width: 100%;
         position: relative;
     }
-    
+
     .right-column {
         height: 300px;
         top: auto;
     }
-    
+
     .card {
         margin: 0.5rem 0;
     }

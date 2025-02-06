@@ -309,7 +309,6 @@ def create_layout():
                     # Right column (map)
                     html.Div(
                         [
-                            # Update warehouse selector styling
                             dbc.Card(
                                 dbc.CardBody(
                                     [
@@ -325,8 +324,13 @@ def create_layout():
                                 ),
                                 className="mb-4 mt-3",
                             ),
-                            dcc.Graph(
-                                figure=fig, id="map-content", className="map-content"
+                            html.Div(
+                                dcc.Graph(
+                                    figure=fig,
+                                    id="map-content",
+                                    className="map-content",
+                                ),
+                                className="map-container",
                             ),
                         ],
                         className="right-column",

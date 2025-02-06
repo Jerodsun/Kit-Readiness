@@ -312,7 +312,10 @@ def register_callbacks(app):
             transfers_table = dash_table.DataTable(
                 data=[dict(row) for row in transfers],
                 columns=[
-                    {"name": "Transfer Date", "id": "transfer_date"},  # Changed from shipment_date
+                    {
+                        "name": "Transfer Date",
+                        "id": "transfer_date",
+                    },
                     {"name": "From", "id": "source_warehouse"},
                     {"name": "To", "id": "destination_warehouse"},
                     {"name": "Component", "id": "component_name"},
@@ -925,6 +928,8 @@ def register_callbacks(app):
             showlegend=True,
             paper_bgcolor="white",
             plot_bgcolor="white",
+            legend_title_text="Legend",
+            legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
         )
 
         # Handle rebalancing warehouse connections
@@ -946,6 +951,7 @@ def register_callbacks(app):
                             width=2,
                             color="#3072b4",
                         ),
+                        name="Transfer Route",
                         hoverinfo="skip",
                     )
                 )
@@ -958,7 +964,7 @@ def register_callbacks(app):
                         lat=[source["latitude"]],
                         mode="markers",
                         marker=dict(size=12, color="#e74c3c"),
-                        name="Source",
+                        name="Source Warehouse",
                         hovertext=f"Source: {source['warehouse_name']}",
                     )
                 )
@@ -970,7 +976,7 @@ def register_callbacks(app):
                         lat=[dest["latitude"]],
                         mode="markers",
                         marker=dict(size=12, color="#27ae60"),
-                        name="Destination",
+                        name="Destination Warehouse",
                         hovertext=f"Destination: {dest['warehouse_name']}",
                     )
                 )
@@ -981,7 +987,7 @@ def register_callbacks(app):
                 (w for w in warehouses if w["warehouse_id"] == inventory_id), None
             )
             if selected:
-                # Add circle around selected warehouse
+                # Add selection markers with proper names
                 fig.add_trace(
                     dict(
                         type="scattermapbox",
@@ -991,10 +997,11 @@ def register_callbacks(app):
                         marker=dict(
                             size=25, color="rgba(48, 114, 180, 0.3)", symbol="circle"
                         ),
+                        name="Selection Highlight",
                         hoverinfo="skip",
+                        showlegend=False,
                     )
                 )
-                # Add center point
                 fig.add_trace(
                     dict(
                         type="scattermapbox",
@@ -1002,7 +1009,7 @@ def register_callbacks(app):
                         lat=[selected["latitude"]],
                         mode="markers",
                         marker=dict(size=8, color="#3072b4"),
-                        name="Selected Warehouse",
+                        name="Active Warehouse",
                         hovertext=f"Selected: {selected['warehouse_name']}",
                     )
                 )
