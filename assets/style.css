@@ -72,28 +72,24 @@ h3 {
     top: 60px;
     bottom: 0;
     padding: 20px;
-    overflow-y: auto;
-}
-
-.map-content {
-    height: calc(100% - 20px) !important;
-    width: calc(100% - 20px) !important;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px var(--shadow);
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
 }
 
 .map-container {
+    flex: 1;
     position: relative;
     border-radius: 12px;
     box-shadow: 0 4px 12px var(--shadow);
     overflow: hidden;
+    margin-bottom: 20px;
 }
 
 .map-content {
-    height: 80% !important;
+    height: 100% !important;
     width: 100% !important;
+    padding: 10px;
 }
 
 .container {
