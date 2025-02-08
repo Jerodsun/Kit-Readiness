@@ -334,7 +334,7 @@ def register_callbacks(app):
             return (
                 html.Div(
                     [
-                        html.H3("Scheduled Warehouse Transfers", className="mb-4"),
+                        html.H3("Warehouse Transfers", className="mb-4"),
                         dbc.Card(
                             [
                                 dbc.CardHeader("Component Transfers"),
@@ -373,7 +373,7 @@ def register_callbacks(app):
             return (
                 html.Div(
                     [
-                        html.H3("Scheduled End Shipments", className="mb-4"),
+                        html.H3("End Shipments", className="mb-4"),
                         dbc.Card(
                             [
                                 dbc.CardHeader("Kit Shipments"),

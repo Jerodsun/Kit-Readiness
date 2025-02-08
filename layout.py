@@ -74,11 +74,11 @@ def create_layout():
                                         tab_id="rebalance-warehouses",
                                     ),
                                     dbc.Tab(
-                                        label="Scheduled Transfers",
+                                        label="Transfers",
                                         tab_id="scheduled-transfers",
                                     ),
                                     dbc.Tab(
-                                        label="Scheduled Shipments",
+                                        label="Shipments",
                                         tab_id="scheduled-shipments",
                                     ),
                                 ],
