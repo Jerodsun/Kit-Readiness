@@ -4,4 +4,4 @@ flask
 sqlalchemy
 plotly
 python-dotenv
-logging
+pytest
