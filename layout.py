@@ -368,7 +368,6 @@ def create_layout():
                             # Add shipment creation modal
                             dbc.Modal(
                                 [
-                                    # ...existing code...
                                     dbc.ModalHeader("Create New Shipment"),
                                     dbc.ModalBody(
                                         [
