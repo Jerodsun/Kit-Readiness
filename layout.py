@@ -303,6 +303,15 @@ def create_layout():
                                 id="rebalance-container",
                                 style={"display": "none"},
                             ),
+                            # Add blank components to satisfy callback requirements
+                            html.Div(dbc.Button(id="create-shipment-button", n_clicks=0), style={"display": "none"}),
+                            html.Div(dcc.Dropdown(id="shipment-warehouse"), style={"display": "none"}),
+                            html.Div(dcc.Dropdown(id="shipment-destination"), style={"display": "none"}),
+                            html.Div(dcc.Dropdown(id="shipment-kit"), style={"display": "none"}),
+                            html.Div(dbc.Input(id="shipment-quantity", type="number"), style={"display": "none"}),
+                            html.Div(dcc.DatePickerSingle(id="new-shipment-date"), style={"display": "none"}),
+                            html.Div(dbc.Button(id="cancel-shipment", n_clicks=0), style={"display": "none"}),
+                            html.Div(dbc.Button(id="confirm-shipment", n_clicks=0), style={"display": "none"}),
                         ],
                         className="left-column",
                     ),
@@ -324,6 +333,12 @@ def create_layout():
                                 ),
                                 className="mb-4 mt-3",
                             ),
+                            dbc.Button(
+                                "Create Shipment",
+                                id="create-shipment-button",
+                                color="primary",
+                                className="mb-3",
+                            ),
                             html.Div(
                                 dcc.Graph(
                                     figure=fig,
@@ -331,6 +346,107 @@ def create_layout():
                                     className="map-content",
                                 ),
                                 className="map-container",
+                            ),
+                            # Add shipment creation modal
+                            dbc.Modal(
+                                [
+# ...existing code...
+                                    dbc.ModalHeader("Create New Shipment"),
+                                    dbc.ModalBody(
+                                        [
+                                            dbc.Form(
+                                                [
+                                                    dbc.Row(
+                                                        [
+                                                            dbc.Col(
+                                                                [
+                                                                    html.Label("Warehouse:"),
+                                                                    dcc.Dropdown(
+                                                                        id="shipment-warehouse",
+                                                                        className="mb-3",
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ]
+                                                    ),
+                                                    dbc.Row(
+                                                        [
+                                                            dbc.Col(
+                                                                [
+                                                                    html.Label("Destination:"),
+                                                                    dcc.Dropdown(
+                                                                        id="shipment-destination",
+                                                                        className="mb-3",
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ]
+                                                    ),
+                                                    dbc.Row(
+                                                        [
+                                                            dbc.Col(
+                                                                [
+                                                                    html.Label("Kit:"),
+                                                                    dcc.Dropdown(
+                                                                        id="shipment-kit",
+                                                                        className="mb-3",
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ]
+                                                    ),
+                                                    dbc.Row(
+                                                        [
+                                                            dbc.Col(
+                                                                [
+                                                                    html.Label("Quantity:"),
+                                                                    dbc.Input(
+                                                                        type="number",
+                                                                        id="shipment-quantity",
+                                                                        min=1,
+                                                                        className="mb-3",
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ]
+                                                    ),
+                                                    dbc.Row(
+                                                        [
+                                                            dbc.Col(
+                                                                [
+                                                                    html.Label("Shipment Date:"),
+                                                                    dcc.DatePickerSingle(
+                                                                        id="new-shipment-date",
+                                                                        min_date_allowed=date.today(),
+                                                                        date=date.today(),
+                                                                        className="mb-3",
+                                                                    ),
+                                                                ]
+                                                            ),
+                                                        ]
+                                                    ),
+                                                    html.Div(id="shipment-message", className="mt-3"),
+                                                ]
+                                            )
+                                        ]
+                                    ),
+                                    dbc.ModalFooter(
+                                        [
+                                            dbc.Button(
+                                                "Cancel",
+                                                id="cancel-shipment",
+                                                className="me-2",
+                                            ),
+                                            dbc.Button(
+                                                "Create Shipment",
+                                                id="confirm-shipment",
+                                                color="primary",
+                                            ),
+                                        ]
+                                    ),
+                                ],
+                                id="shipment-modal",
+                                is_open=False,
                             ),
                         ],
                         className="right-column",
