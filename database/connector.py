@@ -384,8 +384,8 @@ def create_end_shipment(warehouse_id, destination_id, kit_id, quantity, shipment
 
 
 def get_warehouse_transfers():
-    """Fetches all scheduled transfers between warehouses"""
-    logger.info("Fetching scheduled warehouse transfers")
+    """Fetches all transfers between warehouses"""
+    logger.info("Fetching warehouse transfers")
     with get_db_connection() as conn:
         cursor = conn.cursor()
         result = cursor.execute(
@@ -408,8 +408,8 @@ def get_warehouse_transfers():
 
 
 def get_end_user_shipments():
-    """Fetches all scheduled shipments to end users"""
-    logger.info("Fetching scheduled end-user shipments")
+    """Fetches all shipments to end users"""
+    logger.info("Fetching end-user shipments")
     with get_db_connection() as conn:
         cursor = conn.cursor()
         result = cursor.execute(
