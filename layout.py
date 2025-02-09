@@ -357,12 +357,6 @@ def create_layout():
                                 ),
                                 className="mb-4 mt-3",
                             ),
-                            dbc.Button(
-                                "Create Shipment",
-                                id="create-shipment-button",
-                                color="primary",
-                                className="mb-3",
-                            ),
                             html.Div(
                                 dcc.Graph(
                                     figure=fig,
