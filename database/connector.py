@@ -283,7 +283,9 @@ def calculate_rebalance_suggestions(
                             "impact": (
                                 "High"
                                 if impact_score > 2
-                                else "Medium" if impact_score > 1 else "Low"
+                                else "Medium"
+                                if impact_score > 1
+                                else "Low"
                             ),
                             "source_remaining": component["available_quantity"]
                             - transfer_amount,
