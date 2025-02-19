@@ -280,11 +280,13 @@ def calculate_rebalance_suggestions(
                             "component_id": component["component_id"],
                             "component": component["component_name"],
                             "quantity": transfer_amount,
-                            "impact": "High"
-                            if impact_score > 2
-                            else "Medium"
-                            if impact_score > 1
-                            else "Low",
+                            "impact": (
+                                "High"
+                                if impact_score > 2
+                                else "Medium"
+                                if impact_score > 1
+                                else "Low"
+                            ),
                             "source_remaining": component["available_quantity"]
                             - transfer_amount,
                             "dest_new_total": dest_current + transfer_amount,
