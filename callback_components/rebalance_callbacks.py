@@ -4,7 +4,6 @@ from database.connector import (
     calculate_possible_kits,
     get_kit_components,
     calculate_rebalance_suggestions,
-
 )
 
 import logging
@@ -15,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 def register_rebalance_callbacks(app):
-
     @app.callback(
         [
             Output("rebalance-suggestions", "children"),

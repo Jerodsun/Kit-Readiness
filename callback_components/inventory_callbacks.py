@@ -2,9 +2,7 @@ from dash import Input, Output, html, dash_table, State
 import dash_bootstrap_components as dbc
 from database.connector import (
     get_warehouse_inventory,
-
     update_warehouse_inventory,
-
 )
 from dash.exceptions import PreventUpdate
 import logging
@@ -14,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 def register_inventory_callbacks(app):
-
     @app.callback(
         Output("save-status", "children"),
         [

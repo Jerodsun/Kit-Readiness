@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 
 def register_map_callbacks(app):
-
     # Update map callback to use common selector
     @app.callback(
         Output("map-content", "figure"),

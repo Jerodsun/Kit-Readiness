@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 def register_warehouse_callbacks(app):
-
     @app.callback(
         [
             Output("source-warehouse", "options"),

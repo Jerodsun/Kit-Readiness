@@ -1,7 +1,6 @@
 from dash import Input, Output, html, State, ctx
 from database.connector import (
     get_all_warehouses,
-
     get_all_destinations,
     get_kit_details,
     create_end_shipment,
@@ -14,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 def register_shipment_callbacks(app):
-
     @app.callback(
         [
             Output("shipment-modal", "is_open"),
