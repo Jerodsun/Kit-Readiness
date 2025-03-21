@@ -14,7 +14,7 @@ DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 
 # Initialize the Dash app
-app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = Dash(__name__, title="Kit Readiness Tool" external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 # Set layout
 app.layout = create_layout()
