@@ -769,6 +769,7 @@ class LogisticsSolver:
 
     def generate_distance_matrix(self):
         """Calculate distances between all pairs of warehouses"""
+        logger.info("Generating distance matrix...")
         for w1_id, w1 in self.inventory_manager.warehouses.items():
             for w2_id, w2 in self.inventory_manager.warehouses.items():
                 if w1_id == w2_id:
@@ -777,11 +778,34 @@ class LogisticsSolver:
                     w1.latitude, w1.longitude, w2.latitude, w2.longitude
                 )
                 self.distances[(w1_id, w2_id)] = distance
+                # Debug log for extreme distances
+                if distance > 1000:
+                    logger.debug(
+                        f"Long distance {distance:.2f} miles between warehouses {w1_id} and {w2_id}"
+                    )
+        logger.info(f"Distance matrix generated with {len(self.distances)} entries")
 
     def get_distance(self, origin_id: int, destination_id: int) -> float:
         """Get distance between two warehouses"""
         if origin_id == destination_id:
             return 0.0
+        if (origin_id, destination_id) not in self.distances:
+            logger.warning(
+                f"No distance found between {origin_id} and {destination_id}"
+            )
+            # Try to calculate on the fly if warehouses exist
+            if (
+                origin_id in self.inventory_manager.warehouses
+                and destination_id in self.inventory_manager.warehouses
+            ):
+                w1 = self.inventory_manager.warehouses[origin_id]
+                w2 = self.inventory_manager.warehouses[destination_id]
+                distance = haversine_distance(
+                    w1.latitude, w1.longitude, w2.latitude, w2.longitude
+                )
+                self.distances[(origin_id, destination_id)] = distance
+                return distance
+            return float("inf")
         return self.distances.get((origin_id, destination_id), float("inf"))
 
     def is_direct_route_possible(
@@ -814,9 +838,32 @@ class LogisticsSolver:
         # Use class default if max_range not specified
         if max_range is None:
             max_range = self.max_vehicle_range
+
+        # Check if origin and destination exist
+        if origin_id not in self.inventory_manager.warehouses:
+            logger.error(f"Origin warehouse {origin_id} not found")
+            return None
+        if destination_id not in self.inventory_manager.warehouses:
+            logger.error(f"Destination warehouse {destination_id} not found")
+            return None
+
+        # Log the distance and range constraint
+        distance = self.get_distance(origin_id, destination_id)
+        logger.info(
+            f"Distance between warehouses {origin_id} and {destination_id}: {distance:.2f} miles"
+        )
+        logger.info(f"Maximum range constraint: {max_range:.2f} miles")
+
         # If direct path is possible, return it
         if self.is_direct_route_possible(origin_id, destination_id, max_range):
+            logger.info(
+                f"Direct route is possible between {origin_id} and {destination_id}"
+            )
             return [origin_id, destination_id]
+        else:
+            logger.info(
+                f"Direct route not possible, searching for path with max {max_hops} hops"
+            )
 
         # Use BFS to find the shortest path
         queue = [(origin_id, [origin_id])]
@@ -831,6 +878,9 @@ class LogisticsSolver:
 
             # Check if we can reach the destination from here
             if self.is_direct_route_possible(current_id, destination_id, max_range):
+                logger.info(
+                    f"Found path with {len(path)} stops: {path + [destination_id]}"
+                )
                 return path + [destination_id]
 
             # Try all possible next stops
@@ -844,7 +894,19 @@ class LogisticsSolver:
                     visited.add(next_id)
                     queue.append((next_id, path + [next_id]))
 
-        # No path found
+        # No path found, log available warehouses for debugging
+        logger.error("No path found. Available warehouses:")
+        for wh_id, wh in self.inventory_manager.warehouses.items():
+            logger.error(
+                f"  Warehouse {wh_id}: {wh.name} at ({wh.latitude}, {wh.longitude})"
+            )
+
+        # If max_range is less than the direct distance, suggest increasing it
+        if distance > max_range:
+            logger.error(
+                f"Distance ({distance:.2f}) exceeds max range ({max_range:.2f}). Try increasing max_range."
+            )
+
         return None
 
     def find_all_paths(
@@ -921,6 +983,13 @@ if __name__ == "__main__":
     # Initialize LogisticsSolver with the inventory manager
     solver = LogisticsSolver(inventory_manager)
 
+    # Show available warehouses
+    logger.info("Available warehouses:")
+    for wh_id, wh in inventory_manager.warehouses.items():
+        logger.info(
+            f"  Warehouse {wh_id}: {wh.name} at ({wh.latitude}, {wh.longitude})"
+        )
+
     # Define sample warehouses and components for the test
     source_warehouse_id = 1
     destination_warehouse_id = 2
@@ -949,14 +1018,15 @@ if __name__ == "__main__":
     else:
         logger.error("Failed to create transfer request.")
 
-    # Find a path between two warehouses
+    # Try to find a path
     path = solver.find_path(
         origin_id=source_warehouse_id,
         destination_id=destination_warehouse_id,
-        max_hops=3
+        max_range=5000.0,  # Much larger range
+        max_hops=3,
     )
 
     if path:
         logger.info(f"Found path: {path}")
     else:
-        logger.error("No path found.")
+        logger.error("No path found even with increased range. Check warehouse data.")
