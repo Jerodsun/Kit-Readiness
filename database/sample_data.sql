@@ -1,23 +1,17 @@
--- Sample Kits
+-- Kits
 INSERT INTO
     kits (kit_name, description)
 VALUES
-    (
-        'Basic Tool Kit',
-        'Essential tools for home maintenance'
-    ),
+    ('Basic Tool Kit', 'Essential tools'),
     ('Emergency Kit', 'Basic emergency supplies'),
     ('First Aid Kit', 'Standard medical supplies');
 
--- Sample Components
+-- Components
 INSERT INTO
     components (component_name, description)
 VALUES
     ('Hammer', 'Standard claw hammer'),
-    (
-        'Screwdriver Set',
-        'Phillips and flathead screwdrivers'
-    ),
+    ('Screwdriver Set','Phillips/flathead screwdrivers'),
     ('Wrench Set', 'Adjustable wrenches'),
     ('Flashlight', 'LED emergency flashlight'),
     ('Batteries', 'AA batteries'),
@@ -25,7 +19,7 @@ VALUES
     ('Antiseptic Wipes', 'Medical wipes'),
     ('Gauze Rolls', 'Medical gauze');
 
--- Kit Components Relationships
+-- Kit Component Relationships
 INSERT INTO
     kit_components (kit_id, component_id, quantity)
 VALUES
@@ -39,85 +33,25 @@ VALUES
     (3, 8, 2) -- First Aid Kit: 2 Gauze Rolls
 ;
 
--- Sample Warehouses
+-- Warehouses
 INSERT INTO
     warehouses (warehouse_name, location, latitude, longitude)
 VALUES
-    (
-        'East Coast Facility',
-        'New York, NY',
-        40.7128,
-        -74.0060
-    ),
-    (
-        'West Coast Facility',
-        'Los Angeles, CA',
-        34.0522,
-        -118.2437
-    ),
-    (
-        'Central Facility',
-        'Chicago, IL',
-        41.8781,
-        -87.6298
-    ),
-    (
-        'Southern Facility',
-        'Houston, TX',
-        29.7604,
-        -95.3698
-    ),
-    (
-        'Mountain Facility',
-        'Denver, CO',
-        39.7392,
-        -104.9903
-    ),
-    (
-        'Pacific Northwest Facility',
-        'Seattle, WA',
-        47.6062,
-        -122.3321
-    ),
-    (
-        'Southwest Facility',
-        'Phoenix, AZ',
-        33.4484,
-        -112.0740
-    ),
-    (
-        'Midwest Facility',
-        'Kansas City, MO',
-        39.0997,
-        -94.5786
-    ),
-    (
-        'Northeast Facility',
-        'Boston, MA',
-        42.3601,
-        -71.0589
-    ),
-    (
-        'Southeast Facility',
-        'Miami, FL',
-        25.7617,
-        -80.1918
-    ),
-    (
-        'Great Lakes Facility',
-        'Cleveland, OH',
-        41.4993,
-        -81.6944
-    ),
-    (
-        'Northern Facility',
-        'Minneapolis, MN',
-        44.9778,
-        -93.2650
-    ),
-    ('Plains Facility', 'Omaha, NE', 41.2565, -95.9345);
+    ('East Coast Facility', 'New York, NY', 40.7128, -74.0060),
+    ('West Coast Facility', 'Los Angeles, CA', 34.0522, -118.2437),
+    ('Central Facility', 'Chicago, IL', 41.8781, -87.6298),
+    ('Southern Facility', 'Houston, TX', 29.7604, -95.3698),
+    ('Mountain Facility', 'Denver, CO', 39.7392, -104.9903),
+    ('Pacific Northwest Facility', 'Seattle, WA', 47.6062, -122.3321),
+    ('Southwest Facility', 'Phoenix, AZ', 33.4484, -112.0740),
+    ('Midwest Facility', 'Kansas City, MO', 39.0997, -94.5786),
+    ('Northeast Facility', 'Boston, MA', 42.3601, -71.0589),
+    ('Southeast Facility', 'Miami, FL', 25.7617, -80.1918),
+    ('Great Lakes Facility', 'Cleveland, OH', 41.4993, -81.6944),
+    ('Northern Facility', 'Minneapolis, MN', 44.9778, -93.2650),
+    ('Plains Facility', 'Omaha, NE', 41.2565, -95.9345)
 
--- Sample Warehouse Inventory
+-- Warehouse Inventory
 INSERT INTO
     warehouse_inventory (
         warehouse_id,
@@ -161,8 +95,7 @@ VALUES
     (14, 8, 100, 40, 200) -- Plains: 100 Gauze Rolls
 ;
 
--- Chicago: 80 Gauze Rolls
--- Sample Completed Kits
+-- Completed Kits
 INSERT INTO
     completed_kits (warehouse_id, kit_id, quantity)
 VALUES
@@ -181,7 +114,7 @@ VALUES
     (13, 1, 11) -- Omaha: 11 Tool Kits
 ;
 
--- Sample Destinations in Mexico
+-- Destinations in Mexico
 INSERT INTO
     destinations (destination_name, latitude, longitude)
 VALUES
@@ -201,7 +134,7 @@ VALUES
     ('Aguascalientes', 21.8853, -102.2916),
     ('Acapulco', 16.8531, -99.8237);
 
--- Sample Warehouse Transfers
+-- Warehouse Transfers
 INSERT INTO
     warehouse_transfers (
         transfer_date,
@@ -221,7 +154,7 @@ VALUES
     ('2024-02-08', 13, 1, 2, 25) -- Omaha to NY: 25 Screwdriver Sets
 ;
 
--- Sample End Shipments
+-- End Shipments
 INSERT INTO
     end_shipments (
         shipment_date,
