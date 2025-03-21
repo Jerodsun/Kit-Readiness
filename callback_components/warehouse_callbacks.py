@@ -3,10 +3,6 @@ from database.connector import (
     get_all_warehouses,
 )
 from dash.exceptions import PreventUpdate
-import logging
-
-# Get logger
-logger = logging.getLogger(__name__)
 
 
 def register_warehouse_callbacks(app):
@@ -29,7 +25,6 @@ def register_warehouse_callbacks(app):
                 ]
                 return options, options
             except Exception as e:
-                logger.error(f"Error fetching warehouses: {e}")
                 return [], []
         raise PreventUpdate
 
@@ -67,6 +62,5 @@ def register_warehouse_callbacks(app):
             )
             return options, default_value
         except Exception as e:
-            logger.error(f"Error fetching warehouses: {e}")
             return [], None
         return [], None

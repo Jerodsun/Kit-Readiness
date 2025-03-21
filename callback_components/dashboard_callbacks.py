@@ -6,11 +6,7 @@ from database.connector import (
     get_end_user_shipments,
 )
 
-import logging
 from .utils import create_health_card
-
-# Get logger
-logger = logging.getLogger(__name__)
 
 
 def register_dashboard_callbacks(app):
@@ -19,7 +15,7 @@ def register_dashboard_callbacks(app):
             Output("dashboard-content", "children"),
             Output("inventory-management", "style"),
             Output("rebalance-container", "style"),
-            Output("kit-calculator-container", "style"),  # Add this output
+            Output("kit-calculator-container", "style"),
         ],
         [Input("tabs", "active_tab")],
     )
@@ -27,7 +23,7 @@ def register_dashboard_callbacks(app):
         # Default styles (hidden)
         inventory_style = {"display": "none"}
         rebalance_style = {"display": "none"}
-        calculator_style = {"display": "none"}  # Add this default
+        calculator_style = {"display": "none"}
 
         if active_tab == "home":
             return (
@@ -118,7 +114,7 @@ def register_dashboard_callbacks(app):
                 ),
                 inventory_style,
                 rebalance_style,
-                calculator_style,  # Add this
+                calculator_style,
             )
 
         elif active_tab == "warehouse-health":
@@ -163,7 +159,8 @@ def register_dashboard_callbacks(app):
                     {
                         "name": "Stock Level %",
                         "id": "stock_level_percentage",
-                        "format": {"specifier": ".1f"},
+                        "type": "numeric",
+                        "format": {"specifier": ".2f"},
                     },
                     {"name": "Low Stock Items", "id": "low_stock_items"},
                     {"name": "Total Items", "id": "total_items"},

@@ -1,27 +1,20 @@
 import sqlite3
-import logging
 from contextlib import contextmanager
 
 DATABASE_PATH = "database/kit_readiness.db"
 
-# Get logger
-logger = logging.getLogger(__name__)
-
 
 @contextmanager
 def get_db_connection():
-    logger.info("Connecting to the database.")
     conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     try:
         yield conn
     finally:
         conn.close()
-        logger.info("Database connection closed.")
 
 
 def get_all_warehouses():
-    logger.info("Fetching all warehouses.")
     with get_db_connection() as conn:
         cursor = conn.cursor()
         result = cursor.execute(
@@ -29,12 +22,11 @@ def get_all_warehouses():
             SELECT * FROM warehouses
         """
         ).fetchall()
-        logger.info(f"Retrieved {len(result)} warehouses.")
+
         return result
 
 
 def get_warehouse_inventory(warehouse_id):
-    logger.info(f"Fetching inventory for warehouse ID: {warehouse_id}.")
     with get_db_connection() as conn:
         cursor = conn.cursor()
         result = cursor.execute(
@@ -49,14 +41,10 @@ def get_warehouse_inventory(warehouse_id):
         """,
             (warehouse_id,),
         ).fetchall()
-        logger.info(
-            f"Retrieved {len(result)} inventory items for warehouse ID: {warehouse_id}."
-        )
         return result
 
 
 def get_kit_details():
-    logger.info("Fetching all kit details.")
     with get_db_connection() as conn:
         cursor = conn.cursor()
         result = cursor.execute(
@@ -64,12 +52,11 @@ def get_kit_details():
             SELECT * FROM kits
         """
         ).fetchall()
-        logger.info(f"Retrieved {len(result)} kits.")
+
         return result
 
 
 def get_warehouse_health_metrics():
-    logger.info("Fetching warehouse health metrics.")
     with get_db_connection() as conn:
         cursor = conn.cursor()
         result = cursor.execute(
@@ -97,13 +84,13 @@ def get_warehouse_health_metrics():
             ORDER BY stock_level_percentage DESC
             """
         ).fetchall()
-        logger.info(f"Retrieved health metrics for {len(result)} warehouses.")
+
         return result
 
 
 def get_kit_components(warehouse_id=None):
     """Fetches kit component mappings with current inventory if warehouse specified"""
-    logger.info("Fetching kit component mappings")
+
     with get_db_connection() as conn:
         cursor = conn.cursor()
         if warehouse_id:
@@ -147,7 +134,6 @@ def get_kit_components(warehouse_id=None):
 
 
 def calculate_possible_kits(warehouse_id):
-    logger.info(f"Calculating possible kits for warehouse {warehouse_id}")
     with get_db_connection() as conn:
         cursor = conn.cursor()
         result = cursor.execute(
@@ -178,9 +164,6 @@ def calculate_possible_kits(warehouse_id):
 def calculate_rebalance_suggestions(
     source_id, dest_id, min_transfers=1, max_transfers=100
 ):
-    logger.info(
-        f"Calculating rebalance suggestions between warehouses {source_id} and {dest_id}"
-    )
     with get_db_connection() as conn:
         cursor = conn.cursor()
 
@@ -313,7 +296,7 @@ def update_warehouse_inventory(warehouse_id, updates):
     Updates inventory quantities for a warehouse
     updates: list of dicts with component_id and new quantity
     """
-    logger.info(f"Updating inventory for warehouse {warehouse_id}")
+
     with get_db_connection() as conn:
         cursor = conn.cursor()
         try:
@@ -327,10 +310,9 @@ def update_warehouse_inventory(warehouse_id, updates):
                     (update["quantity"], warehouse_id, update["component_id"]),
                 )
             conn.commit()
-            logger.info(f"Successfully updated {len(updates)} inventory items")
+
             return True
         except Exception as e:
-            logger.error(f"Error updating inventory: {e}")
             conn.rollback()
             return False
 
@@ -339,7 +321,7 @@ def create_warehouse_transfer(
     source_id, dest_id, component_id, quantity, transfer_date
 ):
     """Creates a new warehouse transfer record"""
-    logger.info(f"Creating transfer from warehouse {source_id} to warehouse {dest_id}")
+
     with get_db_connection() as conn:
         cursor = conn.cursor()
         try:
@@ -355,16 +337,12 @@ def create_warehouse_transfer(
             conn.commit()
             return True
         except Exception as e:
-            logger.error(f"Error creating transfer: {e}")
             conn.rollback()
             return False
 
 
 def create_end_shipment(warehouse_id, destination_id, kit_id, quantity, shipment_date):
     """Creates a new end-user shipment record"""
-    logger.info(
-        f"Creating shipment from warehouse {warehouse_id} to destination {destination_id}"
-    )
     with get_db_connection() as conn:
         cursor = conn.cursor()
         try:
@@ -380,14 +358,13 @@ def create_end_shipment(warehouse_id, destination_id, kit_id, quantity, shipment
             conn.commit()
             return True
         except Exception as e:
-            logger.error(f"Error creating shipment: {e}")
             conn.rollback()
             return False
 
 
 def get_warehouse_transfers():
     """Fetches all transfers between warehouses"""
-    logger.info("Fetching warehouse transfers")
+
     with get_db_connection() as conn:
         cursor = conn.cursor()
         result = cursor.execute(
@@ -411,7 +388,7 @@ def get_warehouse_transfers():
 
 def get_end_user_shipments():
     """Fetches all shipments to end users"""
-    logger.info("Fetching end-user shipments")
+
     with get_db_connection() as conn:
         cursor = conn.cursor()
         result = cursor.execute(
@@ -435,7 +412,7 @@ def get_end_user_shipments():
 
 def get_all_destinations():
     """Fetches all destination locations"""
-    logger.info("Fetching all destinations.")
+
     with get_db_connection() as conn:
         cursor = conn.cursor()
         result = cursor.execute(
@@ -444,5 +421,5 @@ def get_all_destinations():
             ORDER BY destination_name
             """
         ).fetchall()
-        logger.info(f"Retrieved {len(result)} destinations.")
+
         return result

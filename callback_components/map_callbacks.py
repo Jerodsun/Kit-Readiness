@@ -4,10 +4,6 @@ from database.connector import (
     get_all_destinations,
 )
 import plotly.express as px
-import logging
-
-# Get logger
-logger = logging.getLogger(__name__)
 
 
 def register_map_callbacks(app):

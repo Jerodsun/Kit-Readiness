@@ -6,11 +6,7 @@ from database.connector import (
     calculate_rebalance_suggestions,
 )
 
-import logging
 from .utils import create_health_card
-
-# Get logger
-logger = logging.getLogger(__name__)
 
 
 def register_rebalance_callbacks(app):
@@ -135,7 +131,6 @@ def register_rebalance_callbacks(app):
             )
 
         except Exception as e:
-            logger.error(f"Error generating rebalance suggestions: {e}")
             return (
                 html.Div(
                     "Error generating suggestions. Please try again.",

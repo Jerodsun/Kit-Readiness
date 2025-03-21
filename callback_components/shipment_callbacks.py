@@ -6,11 +6,6 @@ from database.connector import (
     create_end_shipment,
 )
 
-import logging
-
-# Get logger
-logger = logging.getLogger(__name__)
-
 
 def register_shipment_callbacks(app):
     @app.callback(

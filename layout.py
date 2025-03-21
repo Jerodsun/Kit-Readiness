@@ -34,7 +34,7 @@ def create_layout():
         [
             html.Div(
                 [
-                    html.H1("Inventory Readiness Dashboard", className="header"),
+                    html.H1("Inventory Management Dashboard", className="header"),
                     html.A(
                         dbc.Button(
                             "Help 📖",

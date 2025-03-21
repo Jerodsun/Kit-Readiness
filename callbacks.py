@@ -1,6 +1,5 @@
 from dash.exceptions import PreventUpdate
 import plotly.express as px
-import logging
 
 from callback_components.dashboard_callbacks import register_dashboard_callbacks
 from callback_components.inventory_callbacks import register_inventory_callbacks
@@ -9,10 +8,6 @@ from callback_components.rebalance_callbacks import register_rebalance_callbacks
 from callback_components.shipment_callbacks import register_shipment_callbacks
 from callback_components.transfer_callbacks import register_transfer_callbacks
 from callback_components.warehouse_callbacks import register_warehouse_callbacks
-
-
-# Get logger
-logger = logging.getLogger(__name__)
 
 
 # register all callbacks
