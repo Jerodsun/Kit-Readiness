@@ -159,6 +159,7 @@ def register_dashboard_callbacks(app):
                     {
                         "name": "Stock Level %",
                         "id": "stock_level_percentage",
+                        "type": "numeric",
                         "format": {"specifier": ".2f"},
                     },
                     {"name": "Low Stock Items", "id": "low_stock_items"},
