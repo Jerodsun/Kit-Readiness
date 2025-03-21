@@ -4,11 +4,6 @@ from database.connector import (
     create_warehouse_transfer,
 )
 
-import logging
-
-# Get logger
-logger = logging.getLogger(__name__)
-
 
 def register_transfer_callbacks(app):
     @app.callback(

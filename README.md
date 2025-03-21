@@ -23,9 +23,6 @@ Configure the application with a `.env` file to set environment variables.
    DEBUG=False
    ```
 
-   <!-- DATABASE_URL=your_database_url
-   SECRET_KEY=your_secret_key -->
-
 ## Running the App with Docker
 
 1. Build the Docker image:
@@ -34,10 +31,10 @@ Configure the application with a `.env` file to set environment variables.
    docker build -t kit-readiness .
    ```
 
-2. Run the Docker container. Make sure to pass the `.env` file:
+2. Run the Docker container and pass the `.env` file:
 
    ```sh
    docker run --env-file .env -p 8050:8050 kit-readiness
    ```
 
-3. Open your web browser and go to `http://localhost:8050` to see the app.
+3. Go to `http://localhost:8050` to see the app.

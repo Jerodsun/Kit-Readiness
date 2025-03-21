@@ -5,10 +5,6 @@ from database.connector import (
     update_warehouse_inventory,
 )
 from dash.exceptions import PreventUpdate
-import logging
-
-# Get logger
-logger = logging.getLogger(__name__)
 
 
 def register_inventory_callbacks(app):
